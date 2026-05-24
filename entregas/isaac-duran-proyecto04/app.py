@@ -57,6 +57,66 @@ def guardar_paciente(entradas, tree):
         finally:
             conexion.close()
 
+################################################################
+
+def cargar_especialidades():
+    conexion = conectar_bd()
+    especialidades = []
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT id_especialidad, nombre FROM especialidades")
+            especialidades = cursor.fetchall()
+        finally:
+            conexion.close()
+            return especialidades
+
+def guardar_medico(entradas, combo_esp, lista_especialidades, tree):
+    nombre = entradas['nombre'].get()
+    apellido = entradas['apellido'].get()
+    documento = entradas['documento'].get()
+    telefono = entradas['telefono'].get()
+    correo = entradas['correo'].get()
+    nombre_esp_selecionada = combo_esp.get()
+
+    if not nombre or not apellido or not documento or not telefono or not nombre_esp_selecionada:
+        messagebox.showerror("Advertencia", "Los campos con * son obligatorios")
+        return
+    
+    id_especialidad = None
+    for esp in lista_especialidades:
+        if esp[1] == nombre_esp_selecionada:
+            id_especialidad = esp[0]
+            break
+
+    conexion = conectar_bd()
+    if conexion:
+        try:
+            conexion = conectar_bd()
+            cursor = conexion.cursor()
+
+            sql = """INSERT INTO medicos (nombre, apellido, documento, telefono, correo) 
+            VALUES (%s, %s, %s, %s, %s)"""
+            cursor.execute(sql, (nombre, apellido, documento, telefono, correo))
+
+            id_medico_nuevo = cursor.lastrowid
+
+            sql_relacion = """INSERT INTO medicos_especialidades (id_medico, id_especialidad) VALUES (%s, %s)"""
+            cursor.execute(sql_relacion, (id_medico_nuevo, id_especialidad))
+
+            conexion.commit()
+            messagebox.showinfo("Éxito", f"Dr/Dra {apellido} guardado con su especialidad {nombre_esp_selecionada}")
+
+            for key in entradas:
+                entradas[key].delete(0, tk.END)
+                combo_esp.set('')
+
+        except Exception as e:
+            conexion.rollback()
+            messagebox.showerror("Error", f"Error al guardar el médico: {e}")
+        finally:
+            conexion.auto_commit = True
+            conexion.close()
 
 ################################################################
 
@@ -82,7 +142,7 @@ def inicar_app():
     notebook.add(frame_medicos, text="⚕️ Gestion de Médicos")
     notebook.add(frame_citas, text="📅 Gestion de Citas")
 
-    #Formulario para agregar pacientes
+    #pestaña para agregar pacientes
     tk.Label(frame_pacientes, text="Registro de nuevo paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
     entradas = {}
     campos = [
@@ -113,6 +173,35 @@ def inicar_app():
     btn_guardar.grid(row=len(campos)+1, column=0, columnspan=2, pady=20)
 
     cargar_pacientes(tree_pacientes)
+
+    ######################################################################################
+
+    #pestaña para agregar médicos
+    tk.Label(frame_medicos, text="Registro de Medicos   ", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+    entradas_medicos = {}
+    campos_medicos = [
+        ("Nombre *", "nombre"),
+        ("Apellido *", "apellido"),
+        ("Documento *", "documento"),
+        ("Teléfono *", "telefono"),
+        ("Correo", "correo")
+    ]
+    for i, (lbl, var) in enumerate(campos_medicos, start=1):
+        tk.Label(frame_medicos, text=lbl).grid(row=i, column=0, sticky="e", padx=10, pady=5)
+        caja = tk.Entry(frame_medicos, width=40)
+        caja.grid(row=i, column=1, padx=10, pady=5, sticky="w")
+        entradas_medicos[var] = caja
+
+        tk.Label(frame_medicos, text="Especialidad *").grid(row=len(campos_medicos)+1, column=0, sticky="e", padx=10, pady=5)
+
+        lista_esp_bd = cargar_especialidades()
+        nombres_especialidades = [esp[1] for esp in lista_esp_bd]
+
+        combo_especialidad = ttk.Combobox(frame_medicos, values=nombres_especialidades, state="readonly", width=37)
+        combo_especialidad.grid(row=len(campos_medicos)+1, column=1, padx=10, pady=5, sticky="w")
+
+        btn_guardar_medico = tk.Button(frame_medicos, text="👨‍⚕️ Guardar Médico", command=lambda: guardar_medico(entradas_medicos, combo_especialidad, lista_esp_bd, None))
+        btn_guardar_medico.grid(row=len(campos_medicos)+2, column=0, columnspan=2, pady=20) 
 
     ventana.mainloop()
 
