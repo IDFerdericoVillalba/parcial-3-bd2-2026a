@@ -2,7 +2,25 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from conexiones import conectar_bd
 
-def guaradar_paciente(entradas):
+def cargar_pacientes(tree):
+    for item in tree.get_children():
+        tree.delete(item)
+    conexion = conectar_bd()
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT id_paciente, nombre, apellido, documento, telefono FROM pacientes")
+            registros = cursor.fetchall()
+            for fila in registros:
+                tree.insert("", tk.END, values=fila)
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar pacientes: {e}")
+        finally:
+            conexion.close()
+
+################################################################
+
+def guardar_paciente(entradas, tree):
     nombre = entradas['nombre'].get()
     apelido = entradas['apellido'].get()
     docuemnto = entradas['documento'].get()
@@ -13,32 +31,31 @@ def guaradar_paciente(entradas):
 
 
     #validar que todos los campos de paciente no esten vacios
-    if not (nombre and apelido and docuemnto and fecha_nacimiento and telefono and correo and direccion):
-        tk.messagebox.showerror("Error", "Todos los campos son obligatorios")
+    if not (nombre and apelido and docuemnto and fecha_nacimiento and telefono):
+        messagebox.showerror("Advertencia", "Los campos con * son obligatorios")
         return
     
-    conecxion = conectar_bd()
-    if conecxion:
+    conexion = conectar_bd()
+    if conexion:
         try:
-            cursor = conecxion.cursor()
+            cursor = conexion.cursor()
             sql = """INSERT INTO pacientes (nombre, apellido, documento, fecha_nacimiento, telefono, correo, direccion) 
             VALUES (%s, %s, %s, %s, %s, %s, %s)"""
             valores = (nombre, apelido, docuemnto, fecha_nacimiento, telefono, correo, direccion)
 
             cursor.execute(sql, valores)
-            conecxion.commit()
+            conexion.commit()
 
             messagebox.showinfo("Éxito", f"Paciente {nombre} guardado correctamente")
 
             for key in entradas:
                 entradas[key].delete(0, tk.END)
+            cargar_pacientes(tree)
 
         except Exception as e:
             messagebox.showerror("Error", f"Error al guardar el paciente: {e}")
         finally:
-            conecxion.close()
-    else:
-        messagebox.showerror("Error", "No se pudo conectar a la base de datos")
+            conexion.close()
 
 
 ################################################################
@@ -49,7 +66,7 @@ def inicar_app():
     #ventana principal
     ventana = tk.Tk()
     ventana.title("Sistema de Gestión - Consulta Médico")
-    ventana.geometry("800x400")
+    ventana.geometry("900x700")
 
     #controlador de pestañas
     notebook = ttk.Notebook(ventana)
@@ -82,9 +99,20 @@ def inicar_app():
         caja_texto = tk.Entry(frame_pacientes, width=40)
         caja_texto.grid(row=i, column=1, padx=10, pady=5, sticky="w")
         entradas[nombre_variable] = caja_texto
-    btn_guardar = tk.Button(frame_pacientes, text="💾 Guardar Paciente", command=lambda: guaradar_paciente(entradas))
+
+    columnas = ("id_paciente", "nombre", "apellido", "documento", "telefono")
+    tree_pacientes = ttk.Treeview(frame_pacientes, columns=columnas, show="headings", height=8)
+
+    for col in columnas:
+        tree_pacientes.heading(col, text=col)
+        tree_pacientes.column(col, width=120, anchor="center")
+
+    tree_pacientes.grid(row=len(campos)+2, column=0, columnspan=2, padx=20, pady=20)
+
+    btn_guardar = tk.Button(frame_pacientes, text="💾 Guardar Paciente", command=lambda: guardar_paciente(entradas, tree_pacientes))
     btn_guardar.grid(row=len(campos)+1, column=0, columnspan=2, pady=20)
 
+    cargar_pacientes(tree_pacientes)
 
     ventana.mainloop()
 
