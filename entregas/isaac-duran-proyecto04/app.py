@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from conexiones import conectar_bd
-from consultas import cargar_pacientes, guardar_paciente, cargar_especialidades, guardar_medico
-
+from consultas import cargar_pacientes, guardar_paciente, cargar_especialidades, guardar_medico, cargar_medicos, guardar_horario
 
 ################################################################
 ################################################################
@@ -22,11 +20,13 @@ def inicar_app():
     #frames para cada pestaña
     frame_pacientes = ttk.Frame(notebook)
     frame_medicos = ttk.Frame(notebook)
+    frame_horarios = ttk.Frame(notebook)
     frame_citas = ttk.Frame(notebook)
 
     #agrager frames al notebook
     notebook.add(frame_pacientes, text="👨‍⚕️ Gestion de Pacientes")
     notebook.add(frame_medicos, text="⚕️ Gestion de Médicos")
+    notebook.add(frame_horarios, text="⏰ Gestion de Horarios")
     notebook.add(frame_citas, text="📅 Gestion de Citas")
 
     #pestaña para agregar pacientes
@@ -90,8 +90,43 @@ def inicar_app():
         btn_guardar_medico = tk.Button(frame_medicos, text="👨‍⚕️ Guardar Médico", command=lambda: guardar_medico(entradas_medicos, combo_especialidad, lista_esp_bd, None))
         btn_guardar_medico.grid(row=len(campos_medicos)+2, column=0, columnspan=2, pady=20) 
 
-    ventana.mainloop()
+        ##################################################################################################################
 
+    #pestaña para agregar horarios
+    #-----Medicos
+    tk.Label(frame_horarios, text="Configurar Horario Medico", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+    tk.Label(frame_horarios, text="Médico *").grid(row=1, column=0, sticky="e", padx=10, pady=5)
+    lista_medicos_bd = cargar_medicos()
+    nombres_medicos = [f"{med[1]} {med[2]}" for med in lista_medicos_bd]
+    combo_horario_medico = ttk.Combobox(frame_horarios, values=nombres_medicos, state="readonly", width=37)
+    combo_horario_medico.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+    #-----Dias
+    tk.Label(frame_horarios, text="Día de la semana *").grid(row=2, column=0, sticky="e", padx=10, pady=5)
+    dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+    combo_dia = ttk.Combobox(frame_horarios, values=dias_semana, state="readonly", width=37)
+    combo_dia.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+
+    #-----Horas
+    entradas_horarios = {}
+    tk.Label(frame_horarios, text="Hora Inicio (HH:MM) *").grid(row=3, column=0, sticky="e", padx=10, pady=5)
+    entradas_horarios['hora_inicio'] = ttk.Entry(frame_horarios, width=40)
+    entradas_horarios['hora_inicio'].grid(row=3, column=1, padx=10, pady=5, sticky="w")
+
+    tk.Label(frame_horarios, text="Hora Fin (HH:MM) *").grid(row=4, column=0, sticky="e", padx=10, pady=5)
+    entradas_horarios['hora_fin'] = ttk.Entry(frame_horarios, width=40)
+    entradas_horarios['hora_fin'].grid(row=4, column=1, padx=10, pady=5, sticky="w")
+
+    #-----Boton Guardar
+    btn_guardar_horario = tk.Button(frame_horarios, text="⏰ Guardar Horario", command=lambda: guardar_horario(entradas_horarios, combo_horario_medico, combo_dia, lista_medicos_bd))
+    btn_guardar_horario.grid(row=5, column=0, columnspan=2, pady=20)
+
+
+
+
+
+
+    ventana.mainloop()
 if __name__ == "__main__":
     inicar_app()
     
