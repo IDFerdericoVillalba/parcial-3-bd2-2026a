@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from consultas import cargar_especialidades, guardar_medico, cargar_medicos, guardar_horario, obtener_pacientes_combo, agendar_cita
+from consultas import guardar_horario, obtener_pacientes_combo, agendar_cita
 from consultas_paciente import cargar_pacientes, guardar_paciente
+from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medico
 
 
 ################################################################
