@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from consultas import cargar_pacientes, guardar_paciente, cargar_especialidades, guardar_medico, cargar_medicos, guardar_horario
+from consultas import cargar_pacientes, guardar_paciente, cargar_especialidades, guardar_medico, cargar_medicos, guardar_horario, obtener_pacientes_combo, agendar_cita
 
 ################################################################
 ################################################################
@@ -60,8 +60,8 @@ def inicar_app():
     btn_guardar.grid(row=len(campos)+1, column=0, columnspan=2, pady=20)
 
     cargar_pacientes(tree_pacientes)
-
-    ######################################################################################
+######################################################################################
+######################################################################################
 
     #pestaña para agregar médicos
     tk.Label(frame_medicos, text="Registro de Medicos   ", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
@@ -90,7 +90,10 @@ def inicar_app():
         btn_guardar_medico = tk.Button(frame_medicos, text="👨‍⚕️ Guardar Médico", command=lambda: guardar_medico(entradas_medicos, combo_especialidad, lista_esp_bd, None))
         btn_guardar_medico.grid(row=len(campos_medicos)+2, column=0, columnspan=2, pady=20) 
 
-        ##################################################################################################################
+
+##################################################################################################################       
+##################################################################################################################
+
 
     #pestaña para agregar horarios
     #-----Medicos
@@ -120,6 +123,50 @@ def inicar_app():
     #-----Boton Guardar
     btn_guardar_horario = tk.Button(frame_horarios, text="⏰ Guardar Horario", command=lambda: guardar_horario(entradas_horarios, combo_horario_medico, combo_dia, lista_medicos_bd))
     btn_guardar_horario.grid(row=5, column=0, columnspan=2, pady=20)
+
+
+######################################################################################################################
+######################################################################################################################
+
+    #pestaña para gestionar citas
+    tk.Label(frame_citas, text="Agendar Nueva Cita", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+
+    # Cargar datos para los combos
+    lista_pac_bd = obtener_pacientes_combo()
+    lista_med_bd = cargar_medicos()
+    
+    nombres_pac = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd] # Nombre + Apellido - Documento
+    nombres_med = [f"{m[1]} {m[2]}" for m in lista_med_bd]
+
+    # Combobox Paciente
+    tk.Label(frame_citas, text="Paciente *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+    combo_cita_pac = ttk.Combobox(frame_citas, values=nombres_pac, state="readonly", width=40)
+    combo_cita_pac.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+    # Combobox Médico
+    tk.Label(frame_citas, text="Médico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
+    combo_cita_med = ttk.Combobox(frame_citas, values=nombres_med, state="readonly", width=40)
+    combo_cita_med.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+
+    # Entradas de Texto (Fecha, Hora, Motivo)
+    tk.Label(frame_citas, text="Fecha (YYYY-MM-DD) *").grid(row=3, column=0, padx=10, pady=5, sticky="e")
+    ent_cita_fecha = ttk.Entry(frame_citas, width=43)
+    ent_cita_fecha.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+
+    tk.Label(frame_citas, text="Hora (HH:MM) *").grid(row=4, column=0, padx=10, pady=5, sticky="e")
+    ent_cita_hora = ttk.Entry(frame_citas, width=43)
+    ent_cita_hora.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+
+    tk.Label(frame_citas, text="Motivo de consulta *").grid(row=5, column=0, padx=10, pady=5, sticky="e")
+    ent_cita_motivo = ttk.Entry(frame_citas, width=43)
+    ent_cita_motivo.grid(row=5, column=1, padx=10, pady=5, sticky="w")
+
+    # Botón Agendar
+    btn_agendar = ttk.Button(frame_citas, text="📅 Agendar Cita", 
+                             command=lambda: agendar_cita(combo_cita_pac, combo_cita_med, ent_cita_fecha, ent_cita_hora, ent_cita_motivo, lista_pac_bd, lista_med_bd))
+    btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
+
+
 
 
 
