@@ -1,13 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from consultas import guardar_horario, obtener_pacientes_combo, agendar_cita
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medico
-
+from consultas_horario import guardar_horario
+from consultas_cita import obtener_pacientes_combo, agendar_cita
 
 ################################################################
 ################################################################
-
 
 def inicar_app():
 
@@ -63,6 +62,7 @@ def inicar_app():
     btn_guardar.grid(row=len(campos)+1, column=0, columnspan=2, pady=20)
 
     cargar_pacientes(tree_pacientes)
+
 ######################################################################################
 ######################################################################################
 
@@ -168,10 +168,6 @@ def inicar_app():
     btn_agendar = ttk.Button(frame_citas, text="📅 Agendar Cita", 
                              command=lambda: agendar_cita(combo_cita_pac, combo_cita_med, ent_cita_fecha, ent_cita_hora, ent_cita_motivo, lista_pac_bd, lista_med_bd))
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
-
-
-
-
 
 
 
