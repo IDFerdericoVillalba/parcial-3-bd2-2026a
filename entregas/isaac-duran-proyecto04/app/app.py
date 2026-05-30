@@ -4,6 +4,7 @@ from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medico
 from consultas_horario import guardar_horario
 from consultas_cita import obtener_pacientes_combo, agendar_cita
+from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 
 ################################################################
 ################################################################
@@ -24,12 +25,14 @@ def inicar_app():
     frame_medicos = ttk.Frame(notebook)
     frame_horarios = ttk.Frame(notebook)
     frame_citas = ttk.Frame(notebook)
+    frame_consultas = ttk.Frame(notebook)
 
     #agrager frames al notebook
     notebook.add(frame_pacientes, text="👨‍⚕️ Gestion de Pacientes")
     notebook.add(frame_medicos, text="⚕️ Gestion de Médicos")
     notebook.add(frame_horarios, text="⏰ Gestion de Horarios")
     notebook.add(frame_citas, text="📅 Gestion de Citas")
+    notebook.add(frame_consultas, text="🩺 Atender Citas")
 
     #pestaña para agregar pacientes
     tk.Label(frame_pacientes, text="Registro de nuevo paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
@@ -170,6 +173,44 @@ def inicar_app():
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
 
 
+######################################################################################################################
+######################################################################################################################
+
+    #pestaña para registrar atención médica (consultas)
+    tk.Label(frame_consultas, text="Registrar Atención Médica", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+    tk.Label(frame_consultas, text="Seleccionar Cita *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+    
+    combo_consultas_cita = ttk.Combobox(frame_consultas, state="readonly", width=55)
+    combo_consultas_cita.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+    
+    lista_citas_pendientes = []
+
+    def refrescar_citas():
+        nonlocal lista_citas_pendientes
+        lista_citas_pendientes = obtener_citas_pendientes()
+        nombres_citas = [f"ID: {c[0]} | {c[1]} {c[2]} - Paciente: {c[3]} {c[4]}" for c in lista_citas_pendientes]
+        combo_consultas_cita['values'] = nombres_citas
+    
+    ttk.Button(frame_consultas, text="🔄 Recargar Citas", command=refrescar_citas).grid(row=1, column=2, padx=5)
+    refrescar_citas()
+
+    # Entradas para la consulta
+    tk.Label(frame_consultas, text="Diagnóstico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
+    ent_diag = ttk.Entry(frame_consultas, width=58)
+    ent_diag.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+
+    tk.Label(frame_consultas, text="Observaciones").grid(row=3, column=0, padx=10, pady=5, sticky="e")
+    ent_obs = ttk.Entry(frame_consultas, width=58)
+    ent_obs.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+
+    tk.Label(frame_consultas, text="Medicamento/Tratamiento *").grid(row=4, column=0, padx=10, pady=5, sticky="e")
+    ent_med = ttk.Entry(frame_consultas, width=58)
+    ent_med.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+
+    # Botón Guardar Consulta
+    btn_guardar_consulta = ttk.Button(frame_consultas, text="🩺 Guardar Consulta", 
+            command=lambda: registrar_consulta_medica(combo_consultas_cita, ent_diag, ent_obs, ent_med, lista_citas_pendientes))
+    btn_guardar_consulta.grid(row=5, column=0, columnspan=2, pady=20)
 
 
     ventana.mainloop()
