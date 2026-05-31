@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from datetime import datetime
 from conexiones import conectar_bd
 
 
@@ -16,8 +17,9 @@ def obtener_pacientes_combo():
             conexion.close()
     return pacientes
 
+
 def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pac, lista_med):
-    """Valida conflictos (RF5) y guarda la cita (RF4)"""
+    """Valida conflictos (RF5), horarios del médico y guarda la cita (RF4)"""
     pac_sel = combo_pac.get()
     med_sel = combo_med.get()
     fecha = ent_fecha.get()
@@ -41,13 +43,33 @@ def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pa
             id_med = m[0]
             break
 
+    # --- NUEVA LÓGICA: Calcular qué día de la semana es la fecha seleccionada ---
+    # En Python, Monday=0, Sunday=6. En nuestra BD: Lunes=1, Domingo=7. Así que sumamos 1.
+    try:
+        fecha_obj = datetime.strptime(fecha, "%Y-%m-%d")
+        dia_semana_solicitado = fecha_obj.weekday() + 1 
+    except ValueError:
+        messagebox.showerror("Error", "Formato de fecha incorrecto. Use AAAA-MM-DD")
+        return
+
     # 2. Conectar a BD para validar y guardar
     conexion = conectar_bd()
     if conexion:
         try:
             cursor = conexion.cursor()
+            sql_val_horario = """
+                SELECT COUNT(*) FROM horarios 
+                WHERE id_medico = %s 
+                  AND dia_semana = %s 
+                  AND hora_inicio <= %s 
+                  AND hora_fin >= %s
+            """
+            cursor.execute(sql_val_horario, (id_med, dia_semana_solicitado, hora, hora))
+            if cursor.fetchone()[0] == 0:
+                messagebox.showerror("Fuera de Horario", "❌ El médico seleccionado NO atiende en ese día de la semana o la hora indicada está fuera de su turno.")
+                return
 
-            # --- RF5: VALIDACIÓN DE CONFLICTOS ---
+            # --- RF5: VALIDACIÓN DE CONFLICTOS DE CRUCE ---
             # A) ¿El médico ya está ocupado a esa hora y fecha?
             sql_val_med = "SELECT COUNT(*) FROM citas WHERE id_medico = %s AND fecha = %s AND hora = %s AND estado != 'cancelada'"
             cursor.execute(sql_val_med, (id_med, fecha, hora))
@@ -63,7 +85,6 @@ def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pa
                 return
 
             # --- RF4: INSERTAR LA CITA ---
-            # Si pasamos las validaciones, hacemos el INSERT. Por defecto el estado será 'programada'.
             sql_insert = """INSERT INTO citas (id_paciente, id_medico, fecha, hora, motivo, estado) 
                             VALUES (%s, %s, %s, %s, %s, 'programada')"""
             cursor.execute(sql_insert, (id_pac, id_med, fecha, hora, motivo))
@@ -71,7 +92,6 @@ def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pa
 
             messagebox.showinfo("Éxito", "📅 Cita agendada correctamente.")
             
-            # Limpiar campos
             combo_pac.set('')
             combo_med.set('')
             ent_fecha.delete(0, tk.END)
@@ -101,6 +121,7 @@ def obtener_citas_programadas():
         finally:
             conexion.close()
     return citas
+
 
 def ejecutar_cancelacion_cita(combo_cancelar, lista_citas):
     cita_sel = combo_cancelar.get()
