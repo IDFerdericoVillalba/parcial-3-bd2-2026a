@@ -5,7 +5,7 @@ from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medi
 from consultas_horario import guardar_horario
 from consultas_cita import obtener_pacientes_combo, agendar_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
-
+from historial import obtener_historial_paciente
 ################################################################
 ################################################################
 
@@ -26,6 +26,7 @@ def inicar_app():
     frame_horarios = ttk.Frame(notebook)
     frame_citas = ttk.Frame(notebook)
     frame_consultas = ttk.Frame(notebook)
+    frame_historial = ttk.Frame(notebook)
 
     #agrager frames al notebook
     notebook.add(frame_pacientes, text="👨‍⚕️ Gestion de Pacientes")
@@ -33,6 +34,7 @@ def inicar_app():
     notebook.add(frame_horarios, text="⏰ Gestion de Horarios")
     notebook.add(frame_citas, text="📅 Gestion de Citas")
     notebook.add(frame_consultas, text="🩺 Atender Citas")
+    notebook.add(frame_historial, text="📋 Historial Clínico")
 
     #pestaña para agregar pacientes
     tk.Label(frame_pacientes, text="Registro de nuevo paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
@@ -207,10 +209,34 @@ def inicar_app():
     ent_med = ttk.Entry(frame_consultas, width=58)
     ent_med.grid(row=4, column=1, padx=10, pady=5, sticky="w")
 
-    # Botón Guardar Consulta
+    # Botón Guarda
     btn_guardar_consulta = ttk.Button(frame_consultas, text="🩺 Guardar Consulta", 
             command=lambda: registrar_consulta_medica(combo_consultas_cita, ent_diag, ent_obs, ent_med, lista_citas_pendientes))
     btn_guardar_consulta.grid(row=5, column=0, columnspan=2, pady=20)
+
+
+##############################################################################################################
+##############################################################################################################
+
+    #pestaña para mostrar historial clínico del paciente
+    tk.Label(frame_historial, text="Historial Clínico del Paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+
+    tk.Label(frame_historial, text="Buscar Paciente:").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+    combo_historial_pac = ttk.Combobox(frame_historial, values=nombres_pac, state="readonly", width=50)
+    combo_historial_pac.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+    columnas_hist = ("Fecha", "Médico", "Diagnóstico", "Observaciones", "Tratamiento")
+    tree_historial = ttk.Treeview(frame_historial, columns=columnas_hist, show="headings", height=10)
+    
+    anchos = [90, 150, 200, 150, 150]
+    for col, ancho in zip(columnas_hist, anchos):tree_historial.heading(col, text=col)
+    tree_historial.column(col, width=ancho, anchor="center")
+        
+    tree_historial.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
+
+    btn_buscar_hist = ttk.Button(frame_historial, text="🔍 Ver Historial", 
+                command=lambda: obtener_historial_paciente(combo_historial_pac, tree_historial, lista_pac_bd))
+    btn_buscar_hist.grid(row=2, column=0, columnspan=2, pady=10)
 
 
     ventana.mainloop()
