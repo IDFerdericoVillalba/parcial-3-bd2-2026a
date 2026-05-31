@@ -8,7 +8,7 @@ from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medi
 from consultas_horario import guardar_horario
 from consultas_cita import obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
-from historial import obtener_historial_paciente
+from historial import obtener_historial_paciente, exportar_pdf
 
 
 ################################################################
@@ -48,38 +48,77 @@ def inicar_app():
     notebook.add(frame_consultas, text="🩺 Atender Citas")
     notebook.add(frame_historial, text="📋 Historial Clínico")
 
-    #pestaña para agregar pacientes
-    tk.Label(frame_pacientes, text="Registro de nuevo paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
-    entradas = {}
-    campos = [
-        ("Nombre *", "nombre"),
-        ("Apellido *", "apellido"),
-        ("Documento *", "documento"),
-        ("Fecha de Nacimiento (YYYY-MM-DD) *", "fecha_nacimiento"),
-        ("Teléfono *", "telefono"),
-        ("Correo", "correo"),
-        ("Dirección", "direccion")
-    ]
-    for i, (texto_label, nombre_variable) in enumerate(campos, start=1):    
-        tk.Label(frame_pacientes, text=texto_label).grid(row=i, column=0, sticky="e", padx=10, pady=5)
-        caja_texto = tk.Entry(frame_pacientes, width=40)
-        caja_texto.grid(row=i, column=1, padx=10, pady=5, sticky="w")
-        entradas[nombre_variable] = caja_texto
 
-    columnas = ("id_paciente", "nombre", "apellido", "documento", "telefono")
-    tree_pacientes = ttk.Treeview(frame_pacientes, columns=columnas, show="headings", height=8)
+    # =========================================================
+    # 1. DISEÑO DE GESTIÓN DE PACIENTES (REDISEÑO MODERNO)
+    # =========================================================
+    frame_pacientes.columnconfigure(0, weight=1) # Para que todo se centre bonito
 
-    for col in columnas:
+    # Contenedor 1: Formulario agrupado en una caja suave
+    lf_form_pacientes = ttk.LabelFrame(frame_pacientes, text=" 📋 Formulario de Registro de Paciente ", padding=(20, 15))
+    lf_form_pacientes.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+    # Columna Izquierda (Datos Básicos)
+    ttk.Label(lf_form_pacientes, text="Nombre *").grid(row=0, column=0, padx=10, pady=8, sticky="e")
+    ent_pac_nombre = ttk.Entry(lf_form_pacientes, width=35)
+    ent_pac_nombre.grid(row=0, column=1, padx=10, pady=8, sticky="w")
+
+    ttk.Label(lf_form_pacientes, text="Apellido *").grid(row=1, column=0, padx=10, pady=8, sticky="e")
+    ent_pac_apellido = ttk.Entry(lf_form_pacientes, width=35)
+    ent_pac_apellido.grid(row=1, column=1, padx=10, pady=8, sticky="w")
+
+    ttk.Label(lf_form_pacientes, text="Documento *").grid(row=2, column=0, padx=10, pady=8, sticky="e")
+    ent_pac_doc = ttk.Entry(lf_form_pacientes, width=35)
+    ent_pac_doc.grid(row=2, column=1, padx=10, pady=8, sticky="w")
+
+    # Reemplazamos la fecha de nacimiento manual por el Calendario
+    ttk.Label(lf_form_pacientes, text="Fecha Nacimiento *").grid(row=3, column=0, padx=10, pady=8, sticky="e")
+    ent_pac_fecha = DateEntry(lf_form_pacientes, width=33, background='#2B579A', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+    ent_pac_fecha.grid(row=3, column=1, padx=10, pady=8, sticky="w")
+
+    # Columna Derecha (Datos de Contacto)
+    ttk.Label(lf_form_pacientes, text="Teléfono *").grid(row=0, column=2, padx=20, pady=8, sticky="e")
+    ent_pac_tel = ttk.Entry(lf_form_pacientes, width=35)
+    ent_pac_tel.grid(row=0, column=3, padx=10, pady=8, sticky="w")
+
+    ttk.Label(lf_form_pacientes, text="Correo Electrónico").grid(row=1, column=2, padx=20, pady=8, sticky="e")
+    ent_pac_correo = ttk.Entry(lf_form_pacientes, width=35)
+    ent_pac_correo.grid(row=1, column=3, padx=10, pady=8, sticky="w")
+
+    ttk.Label(lf_form_pacientes, text="Dirección Residencia").grid(row=2, column=2, padx=20, pady=8, sticky="e")
+    ent_pac_dir = ttk.Entry(lf_form_pacientes, width=35)
+    ent_pac_dir.grid(row=2, column=3, padx=10, pady=8, sticky="w")
+
+    entradas_paciente = {
+        'nombre': ent_pac_nombre,
+        'apellido': ent_pac_apellido,
+        'documento': ent_pac_doc,
+        'fecha_nacimiento': ent_pac_fecha,
+        'telefono': ent_pac_tel,
+        'correo': ent_pac_correo,
+        'direccion': ent_pac_dir
+    }
+
+    # Botón Principal (Usamos el estilo Accent para que resalte en azul)
+    btn_guardar_pac = ttk.Button(lf_form_pacientes, text="💾 Guardar Nuevo Paciente", style="Accent.TButton",
+                                 command=lambda: guardar_paciente(entradas_paciente, tree_pacientes))
+    btn_guardar_pac.grid(row=4, column=0, columnspan=4, pady=25)
+
+    # Contenedor 2: Tabla de Resultados
+    lf_tabla_pacientes = ttk.LabelFrame(frame_pacientes, text=" 👥 Directorio de Pacientes ", padding=(10, 10))
+    lf_tabla_pacientes.grid(row=1, column=0, padx=20, pady=5, sticky="nsew")
+
+    columnas_pac = ("ID", "Nombre", "Apellido", "Documento", "Teléfono")
+    tree_pacientes = ttk.Treeview(lf_tabla_pacientes, columns=columnas_pac, show="headings", height=7)
+
+    anchos_pac = [50, 180, 180, 120, 120]
+    for col, ancho in zip(columnas_pac, anchos_pac):
         tree_pacientes.heading(col, text=col)
-        tree_pacientes.column(col, width=120, anchor="center")
+        tree_pacientes.column(col, width=ancho, anchor="center")
 
-    tree_pacientes.grid(row=len(campos)+2, column=0, columnspan=2, padx=20, pady=20)
-
-    btn_guardar = tk.Button(frame_pacientes, text="💾 Guardar Paciente", command=lambda: guardar_paciente(entradas, tree_pacientes))
-    btn_guardar.grid(row=len(campos)+1, column=0, columnspan=2, pady=20)
+    tree_pacientes.pack(fill="both", expand=True, padx=10, pady=10)
 
     cargar_pacientes(tree_pacientes)
-
 ######################################################################################
 ######################################################################################
 
@@ -281,6 +320,12 @@ def inicar_app():
     btn_buscar_hist = ttk.Button(frame_historial, text="🔍 Ver Historial", 
                 command=lambda: obtener_historial_paciente(combo_historial_pac, tree_historial, lista_pac_bd))
     btn_buscar_hist.grid(row=2, column=0, columnspan=2, pady=10)
+
+    tree_historial.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
+    # Botón para exportar a PDF la consulta seleccionada de la tabla (Elemento diferenciador)
+    btn_exportar_pdf = ttk.Button(frame_historial, text="🖨️ Exportar Consulta a PDF", 
+                                  command=lambda: exportar_pdf(tree_historial, combo_historial_pac))
+    btn_exportar_pdf.grid(row=4, column=0, columnspan=2, pady=5)
 
 
     ventana.mainloop()
