@@ -4,3 +4,7 @@ intaladores necesarios para el UI y SQL
 - pip install mysql-connector-python
 
 2.pip install sv_ttk
+
+3.pip install tkcalendar
+
+4.pip install fpdf2

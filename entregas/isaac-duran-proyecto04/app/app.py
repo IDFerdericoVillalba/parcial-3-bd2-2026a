@@ -1,11 +1,12 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import sv_ttk
+from tkcalendar import DateEntry
 ##################################################################
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medico
 from consultas_horario import guardar_horario
-from consultas_cita import obtener_pacientes_combo, agendar_cita
+from consultas_cita import obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente
 
@@ -168,10 +169,11 @@ def inicar_app():
     combo_cita_med.grid(row=2, column=1, padx=10, pady=5, sticky="w")
 
     # Entradas de Texto (Fecha, Hora, Motivo)
-    tk.Label(frame_citas, text="Fecha (YYYY-MM-DD) *").grid(row=3, column=0, padx=10, pady=5, sticky="e")
-    ent_cita_fecha = ttk.Entry(frame_citas, width=43)
-    ent_cita_fecha.grid(row=3, column=1, padx=10, pady=5, sticky="w")
-
+    tk.Label(frame_citas, text="Seleccionar Fecha:").grid(row=3, column=0, padx=10, pady=5, sticky="e")
+    ent_fecha = DateEntry(frame_citas, width=19, background='darkblue',
+        foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+    ent_fecha.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+    
     tk.Label(frame_citas, text="Hora (HH:MM) *").grid(row=4, column=0, padx=10, pady=5, sticky="e")
     ent_cita_hora = ttk.Entry(frame_citas, width=43)
     ent_cita_hora.grid(row=4, column=1, padx=10, pady=5, sticky="w")
@@ -182,8 +184,39 @@ def inicar_app():
 
     # Botón Agendar
     btn_agendar = ttk.Button(frame_citas, text="📅 Agendar Cita", 
-                             command=lambda: agendar_cita(combo_cita_pac, combo_cita_med, ent_cita_fecha, ent_cita_hora, ent_cita_motivo, lista_pac_bd, lista_med_bd))
+                             command=lambda: agendar_cita(combo_cita_pac, combo_cita_med, ent_fecha, ent_cita_hora, ent_cita_motivo, lista_pac_bd, lista_med_bd))
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
+
+    #Boton Cancelar Cita
+    btn_agendar.grid(row=6, column=0, columnspan=2, pady=15)
+    
+    # --- Sección Diferenciadora: Cancelación de Citas ---
+    ttk.Separator(frame_citas, orient='horizontal').grid(row=7, column=0, columnspan=3, sticky='ew', pady=15)
+    
+    tk.Label(frame_citas, text="🚫 Cancelar una Cita Programada", font=("Arial", 11, "bold")).grid(row=8, column=0, columnspan=2, pady=5, sticky="w", padx=10)
+
+    tk.Label(frame_citas, text="Seleccionar Cita:").grid(row=9, column=0, padx=10, pady=5, sticky="e")
+    combo_cancelar_cita = ttk.Combobox(frame_citas, state="readonly", width=55)
+    combo_cancelar_cita.grid(row=9, column=1, padx=10, pady=5, sticky="w")
+
+    lista_citas_cancelar = []
+
+    def refrescar_combo_cancelaciones():
+        nonlocal lista_citas_cancelar
+        lista_citas_cancelar = obtener_citas_programadas()
+        textos_citas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in lista_citas_cancelar]
+        combo_cancelar_cita['values'] = textos_citas
+
+    ttk.Button(frame_citas, text="🔄 Actualizar", command=refrescar_combo_cancelaciones).grid(row=9, column=2, padx=5)
+    
+    # Llamamos a la función para que cargue las citas existentes al abrir la app
+
+    refrescar_combo_cancelaciones()
+
+    btn_cancelar = ttk.Button(frame_citas, text="❌ Cancelar Cita", 
+        command=lambda: [ejecutar_cancelacion_cita(combo_cancelar_cita, lista_citas_cancelar), refrescar_combo_cancelaciones()])
+    btn_cancelar.grid(row=10, column=0, columnspan=2, pady=10)
+
 
 
 ######################################################################################################################

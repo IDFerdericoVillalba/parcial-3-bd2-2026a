@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
+from fpdf import FPDF
 from conexiones import conectar_bd
 
 

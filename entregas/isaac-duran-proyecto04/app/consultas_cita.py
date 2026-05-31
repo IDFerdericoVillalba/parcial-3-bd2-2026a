@@ -82,3 +82,54 @@ def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pa
             messagebox.showerror("Error de BD", f"Error al agendar: {e}")
         finally:
             conexion.close()
+            
+
+def obtener_citas_programadas():
+    conexion = conectar_bd()
+    citas = []
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            sql = """
+                SELECT c.id_cita, c.fecha, c.hora, p.nombre, p.apellido 
+                FROM citas c
+                JOIN pacientes p ON c.id_paciente = p.id_paciente
+                WHERE c.estado = 'programada'
+            """
+            cursor.execute(sql)
+            citas = cursor.fetchall()
+        finally:
+            conexion.close()
+    return citas
+
+def ejecutar_cancelacion_cita(combo_cancelar, lista_citas):
+    cita_sel = combo_cancelar.get()
+    if not cita_sel:
+        messagebox.showwarning("Advertencia", "Selecciona una cita para cancelar.")
+        return
+
+    # Extraer el ID de la cita
+    id_cita = None
+    for c in lista_citas:
+        texto_match = f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
+        if texto_match == cita_sel:
+            id_cita = c[0]
+            break
+
+    seguro = messagebox.askyesno("Confirmar", "¿Está seguro de que desea cancelar esta cita?")
+    if not seguro:
+        return
+
+    conexion = conectar_bd()
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            sql = "UPDATE citas SET estado = 'cancelada' WHERE id_cita = %s"
+            cursor.execute(sql, (id_cita,))
+            conexion.commit()
+            messagebox.showinfo("Éxito", "La cita ha sido cancelada correctamente.")
+            combo_cancelar.set('')
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo cancelar la cita: {e}")
+        finally:
+            conexion.close()
