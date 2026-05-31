@@ -1,13 +1,18 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import sv_ttk
+##################################################################
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medico
 from consultas_horario import guardar_horario
 from consultas_cita import obtener_pacientes_combo, agendar_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente
+
+
 ################################################################
 ################################################################
+
 
 def inicar_app():
 
@@ -15,6 +20,12 @@ def inicar_app():
     ventana = tk.Tk()
     ventana.title("Sistema de Gestión - Consulta Médico")
     ventana.geometry("900x700")
+
+    #tema nuevo para el aplicativo
+    sv_ttk.set_theme("light")
+    estilo = ttk.Style()
+    estilo.configure(".", font=("segoe UI", 10))
+    estilo.configure("Treeview.Heading", font=("segoe UI", 10, "bold"))
 
     #controlador de pestañas
     notebook = ttk.Notebook(ventana)
