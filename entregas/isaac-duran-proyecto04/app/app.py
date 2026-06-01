@@ -203,12 +203,23 @@ def inicar_app():
 # 3. DISEÑO DE GESTIÓN DE HORARIOS (ASIGNACIÓN DE HORARIOS A MÉDICOS)
 # ==========================================================================================================================   
 
+    # === AGREGA ESTA FUNCIÓN AQUÍ ===
+    def actualizar_combo_horarios_medicos():
+        lista_medicos_bd.clear()
+        nuevos_medicos = cargar_tabla_medicos(tree_medicos)
+        lista_medicos_bd.extend(nuevos_medicos)
+        
+        # Mapeamos los nombres para el Combobox
+        nombres_med_actualizados = [f"{m[1]} {m[2]}" for m in lista_medicos_bd]
+        combo_horario_medico['values'] = nombres_med_actualizados
+    # ================================
+
     #-----Medicos
     tk.Label(frame_horarios, text="Configurar Horario Medico", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
     tk.Label(frame_horarios, text="Médico *").grid(row=1, column=0, sticky="e", padx=10, pady=5)
     lista_medicos_bd = cargar_medicos()
     nombres_medicos = [f"{med[1]} {med[2]}" for med in lista_medicos_bd]
-    combo_horario_medico = ttk.Combobox(frame_horarios, values=nombres_medicos, state="readonly", width=37)
+    combo_horario_medico = ttk.Combobox(frame_horarios, values=nombres_medicos, postcommand = actualizar_combo_horarios_medicos, state="readonly", width=37)
     combo_horario_medico.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
     #-----Dias
