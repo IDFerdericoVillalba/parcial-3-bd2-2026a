@@ -236,7 +236,6 @@ def inicar_app():
 # 4. DISEÑO DE GESTIÓN DE CITAS (AGENDAR Y CANCELAR CITAS)
 # ==========================================================================================================================
 
-    #pestaña para agendar citas
     tk.Label(frame_citas, text="Agendar Nueva Cita", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
 
     # Cargar datos para los combos
@@ -370,8 +369,15 @@ def inicar_app():
     #pestaña para mostrar historial clínico del paciente
     tk.Label(frame_historial, text="Historial Clínico del Paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
 
+    def actualizar_combo_historial():
+        lista_pac_bd.clear()
+        lista_pac_bd.extend(obtener_pacientes_combo())
+        
+        nombres_pac_actualizados = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd]
+        combo_historial_pac['values'] = nombres_pac_actualizados
+
     tk.Label(frame_historial, text="Buscar Paciente:").grid(row=1, column=0, padx=10, pady=5, sticky="e")
-    combo_historial_pac = ttk.Combobox(frame_historial, values=nombres_pac, state="readonly", width=50)
+    combo_historial_pac = ttk.Combobox(frame_historial, values=nombres_pac, state="readonly", width=50, postcommand=actualizar_combo_historial)
     combo_historial_pac.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
     columnas_hist = ("Fecha", "Médico", "Diagnóstico", "Observaciones", "Tratamiento")
