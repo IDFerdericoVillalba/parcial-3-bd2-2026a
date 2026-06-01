@@ -4,8 +4,8 @@ import sv_ttk
 from tkcalendar import DateEntry
 ##################################################################
 from consultas_paciente import cargar_pacientes, guardar_paciente
-from consultas_medico import cargar_especialidades, cargar_medicos, guardar_medico
-from consultas_horario import guardar_horario
+from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
+from consultas_horario import guardar_horario, cargar_medicos
 from consultas_cita import obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
@@ -119,35 +119,85 @@ def inicar_app():
     tree_pacientes.pack(fill="both", expand=True, padx=10, pady=10)
 
     cargar_pacientes(tree_pacientes)
-######################################################################################
-######################################################################################
 
-    #pestaña para agregar médicos
-    tk.Label(frame_medicos, text="Registro de Medicos   ", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
-    entradas_medicos = {}
-    campos_medicos = [
-        ("Nombre *", "nombre"),
-        ("Apellido *", "apellido"),
-        ("Documento *", "documento"),
-        ("Teléfono *", "telefono"),
-        ("Correo", "correo")
-    ]
-    for i, (lbl, var) in enumerate(campos_medicos, start=1):
-        tk.Label(frame_medicos, text=lbl).grid(row=i, column=0, sticky="e", padx=10, pady=5)
-        caja = tk.Entry(frame_medicos, width=40)
-        caja.grid(row=i, column=1, padx=10, pady=5, sticky="w")
-        entradas_medicos[var] = caja
 
-        tk.Label(frame_medicos, text="Especialidad *").grid(row=len(campos_medicos)+1, column=0, sticky="e", padx=10, pady=5)
+    # =========================================================
+    # 2. DISEÑO DE GESTIÓN DE MÉDICOS (REDISEÑO MULTI-ESPECIALIDAD)
+    # =========================================================
+    frame_medicos.columnconfigure(0, weight=1)
 
-        lista_esp_bd = cargar_especialidades()
-        nombres_especialidades = [esp[1] for esp in lista_esp_bd]
+    # Contenedor 1: Formulario agrupado
+    lf_form_medicos = ttk.LabelFrame(frame_medicos, text=" 📋 Formulario de Registro de Médico ", padding=(20, 15))
+    lf_form_medicos.grid(row=0, column=0, padx=20, pady=15, sticky="nsew")
 
-        combo_especialidad = ttk.Combobox(frame_medicos, values=nombres_especialidades, state="readonly", width=37)
-        combo_especialidad.grid(row=len(campos_medicos)+1, column=1, padx=10, pady=5, sticky="w")
+    # Columna Izquierda (Datos Personales)
+    ttk.Label(lf_form_medicos, text="Nombre *").grid(row=0, column=0, padx=10, pady=6, sticky="e")
+    ent_med_nombre = ttk.Entry(lf_form_medicos, width=30)
+    ent_med_nombre.grid(row=0, column=1, padx=10, pady=6, sticky="w")
 
-        btn_guardar_medico = tk.Button(frame_medicos, text="👨‍⚕️ Guardar Médico", command=lambda: guardar_medico(entradas_medicos, combo_especialidad, lista_esp_bd, None))
-        btn_guardar_medico.grid(row=len(campos_medicos)+2, column=0, columnspan=2, pady=20) 
+    ttk.Label(lf_form_medicos, text="Apellido *").grid(row=1, column=0, padx=10, pady=6, sticky="e")
+    ent_med_apellido = ttk.Entry(lf_form_medicos, width=30)
+    ent_med_apellido.grid(row=1, column=1, padx=10, pady=6, sticky="w")
+
+    ttk.Label(lf_form_medicos, text="Documento *").grid(row=2, column=0, padx=10, pady=6, sticky="e")
+    ent_med_doc = ttk.Entry(lf_form_medicos, width=30)
+    ent_med_doc.grid(row=2, column=1, padx=10, pady=6, sticky="w")
+
+    ttk.Label(lf_form_medicos, text="Teléfono *").grid(row=3, column=0, padx=10, pady=6, sticky="e")
+    ent_med_tel = ttk.Entry(lf_form_medicos, width=30)
+    ent_med_tel.grid(row=3, column=1, padx=10, pady=6, sticky="w")
+
+    ttk.Label(lf_form_medicos, text="Correo Electrónico").grid(row=4, column=0, padx=10, pady=6, sticky="e")
+    ent_med_correo = ttk.Entry(lf_form_medicos, width=30)
+    ent_med_correo.grid(row=4, column=1, padx=10, pady=6, sticky="w")
+
+    # Columna Derecha: Selección de Especialidades Múltiples
+    ttk.Label(lf_form_medicos, text="Seleccione Especialidad(es) *\n(Use CTRL para elegir varias)").grid(row=0, column=2, padx=15, pady=5, sticky="ne")
+    
+    # Frame interno para juntar el listbox con su scrollbar
+    frame_listbox = ttk.Frame(lf_form_medicos)
+    frame_listbox.grid(row=0, column=3, rowspan=4, padx=10, pady=5, sticky="nw")
+
+    # Listbox con selectmode="extended" para permitir selección múltiple
+    listbox_especialidades = tk.Listbox(frame_listbox, height=6, width=32, selectmode="extended", exportselection=0)
+    scrollbar_esp = ttk.Scrollbar(frame_listbox, orient="vertical", command=listbox_especialidades.yview)
+    listbox_especialidades.configure(yscrollcommand=scrollbar_esp.set)
+    
+    listbox_especialidades.pack(side="left", fill="y")
+    scrollbar_esp.pack(side="right", fill="y")
+
+    # Cargar las especialidades de la BD dentro del Listbox
+    lista_esp_bd = cargar_especialidades()
+    for esp in lista_esp_bd:
+        listbox_especialidades.insert(tk.END, esp[1])
+
+    entradas_medico = {
+        'nombre': ent_med_nombre,
+        'apellido': ent_med_apellido,
+        'documento': ent_med_doc,
+        'telefono': ent_med_tel,
+        'correo': ent_med_correo
+    }
+
+    # Botón Principal con estilo Accent
+    btn_guardar_med = ttk.Button(lf_form_medicos, text="💾 Guardar Nuevo Médico", style="Accent.TButton",
+                                 command=lambda: guardar_medico(entradas_medico, listbox_especialidades, lista_esp_bd, tree_medicos))
+    btn_guardar_med.grid(row=5, column=0, columnspan=4, pady=15)
+
+    # Contenedor 2: Tabla de Médicos Registrados
+    lf_tabla_medicos = ttk.LabelFrame(frame_medicos, text=" 👥 Personal Médico Registrado ", padding=(10, 10))
+    lf_tabla_medicos.grid(row=1, column=0, padx=20, pady=5, sticky="nsew")
+
+    columnas_med = ("ID", "Nombre", "Apellido")
+    tree_medicos = ttk.Treeview(lf_tabla_medicos, columns=columnas_med, show="headings", height=6)
+
+    for col in columnas_med:
+        tree_medicos.heading(col, text=col)
+        tree_medicos.column(col, width=200, anchor="center")
+
+    tree_medicos.pack(fill="both", expand=True, padx=10, pady=5)
+    cargar_tabla_medicos(tree_medicos)
+
 
 
 ##################################################################################################################       

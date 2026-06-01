@@ -43,3 +43,15 @@ def guardar_horario(entradas, combo_medico, combo_dia, lista_medicos):
             messagebox.showerror("Error", f"Error al guardar el horario: {e}")
         finally:
             conexion.close()
+
+def cargar_medicos():
+    conexion = conectar_bd()
+    medicos = []
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            cursor.execute("SELECT id_medico, nombre, apellido FROM medicos")
+            medicos = cursor.fetchall()
+        finally:
+            conexion.close()
+    return medicos
