@@ -10,7 +10,6 @@ from consultas_cita import obtener_pacientes_combo, agendar_cita, obtener_citas_
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
 
-
 ################################################################
 ################################################################
 
@@ -49,9 +48,9 @@ def inicar_app():
     notebook.add(frame_historial, text="📋 Historial Clínico")
 
 
-    # =========================================================
+    # ==========================================================================================================================
     # 1. DISEÑO DE GESTIÓN DE PACIENTES (REDISEÑO MODERNO)
-    # =========================================================
+    # ==========================================================================================================================
     frame_pacientes.columnconfigure(0, weight=1) # Para que todo se centre bonito
 
     # Contenedor 1: Formulario agrupado en una caja suave
@@ -121,11 +120,12 @@ def inicar_app():
     cargar_pacientes(tree_pacientes)
 
 
-    # =========================================================
+    # =================================================================================================================
     # 2. DISEÑO DE GESTIÓN DE MÉDICOS (REDISEÑO MULTI-ESPECIALIDAD)
-    # =========================================================
+    # =================================================================================================================
+    
+    
     frame_medicos.columnconfigure(0, weight=1)
-
     # Contenedor 1: Formulario agrupado
     lf_form_medicos = ttk.LabelFrame(frame_medicos, text=" 📋 Formulario de Registro de Médico ", padding=(20, 15))
     lf_form_medicos.grid(row=0, column=0, padx=20, pady=15, sticky="nsew")
@@ -179,7 +179,7 @@ def inicar_app():
         'correo': ent_med_correo
     }
 
-    # Botón Principal con estilo Accent
+    # Botón Principal
     btn_guardar_med = ttk.Button(lf_form_medicos, text="💾 Guardar Nuevo Médico", style="Accent.TButton",
                                  command=lambda: guardar_medico(entradas_medico, listbox_especialidades, lista_esp_bd, tree_medicos))
     btn_guardar_med.grid(row=5, column=0, columnspan=4, pady=15)
@@ -199,12 +199,10 @@ def inicar_app():
     cargar_tabla_medicos(tree_medicos)
 
 
+# ==========================================================================================================================
+# 3. DISEÑO DE GESTIÓN DE HORARIOS (ASIGNACIÓN DE HORARIOS A MÉDICOS)
+# ==========================================================================================================================   
 
-##################################################################################################################       
-##################################################################################################################
-
-
-    #pestaña para agregar horarios
     #-----Medicos
     tk.Label(frame_horarios, text="Configurar Horario Medico", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
     tk.Label(frame_horarios, text="Médico *").grid(row=1, column=0, sticky="e", padx=10, pady=5)
@@ -234,10 +232,11 @@ def inicar_app():
     btn_guardar_horario.grid(row=5, column=0, columnspan=2, pady=20)
 
 
-######################################################################################################################
-######################################################################################################################
+# ==========================================================================================================================
+# 4. DISEÑO DE GESTIÓN DE CITAS (AGENDAR Y CANCELAR CITAS)
+# ==========================================================================================================================
 
-    #pestaña para gestionar citas
+    #pestaña para agendar citas
     tk.Label(frame_citas, text="Agendar Nueva Cita", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
 
     # Cargar datos para los combos
@@ -247,14 +246,38 @@ def inicar_app():
     nombres_pac = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd] # Nombre + Apellido - Documento
     nombres_med = [f"{m[1]} {m[2]}" for m in lista_med_bd]
 
+    # === AGREGA ESTA FUNCIÓN AQUÍ ===
+    def actualizar_combos_citas():
+        # 1. Actualizamos la lista de pacientes vaciándola y volviéndola a llenar
+        # Usamos clear() y extend() para que el botón "Agendar" siga viendo la misma lista, pero con datos nuevos.
+        lista_pac_bd.clear()
+        lista_pac_bd.extend(obtener_pacientes_combo())
+        
+        # 2. Actualizamos el texto visual del Combobox de pacientes
+        nombres_pac_actualizados = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd]
+        combo_cita_pac['values'] = nombres_pac_actualizados
+        
+        # 3. Hacemos lo mismo para los médicos
+        # OJO: Verifica cómo tienes llamada tu lista de médicos. Aquí asumo que se llama lista_medicos_bd
+        lista_medicos_bd.clear()
+        
+        # Dependiendo de cómo cargues los médicos en tu código original, usa la función correspondiente.
+        # Si usaste cargar_tabla_medicos(tree_medicos), sería así:
+        nuevos_medicos = cargar_tabla_medicos(tree_medicos)
+        lista_medicos_bd.extend(nuevos_medicos)
+        
+        nombres_med_actualizados = [f"{m[1]} {m[2]}" for m in lista_medicos_bd]
+        combo_cita_med['values'] = nombres_med_actualizados
+    # ================================
+
     # Combobox Paciente
     tk.Label(frame_citas, text="Paciente *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
-    combo_cita_pac = ttk.Combobox(frame_citas, values=nombres_pac, state="readonly", width=40)
+    combo_cita_pac = ttk.Combobox(frame_citas, postcommand = actualizar_combos_citas, values=nombres_pac, state="readonly", width=40)
     combo_cita_pac.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
     # Combobox Médico
     tk.Label(frame_citas, text="Médico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
-    combo_cita_med = ttk.Combobox(frame_citas, values=nombres_med, state="readonly", width=40)
+    combo_cita_med = ttk.Combobox(frame_citas, postcommand = actualizar_combos_citas, values=nombres_med, state="readonly", width=40)
     combo_cita_med.grid(row=2, column=1, padx=10, pady=5, sticky="w")
 
     # Entradas de Texto (Fecha, Hora, Motivo)
@@ -273,12 +296,13 @@ def inicar_app():
 
     # Botón Agendar
     btn_agendar = ttk.Button(frame_citas, text="📅 Agendar Cita", 
-                             command=lambda: agendar_cita(combo_cita_pac, combo_cita_med, ent_fecha, ent_cita_hora, ent_cita_motivo, lista_pac_bd, lista_med_bd))
+        command=lambda: agendar_cita(combo_cita_pac, combo_cita_med, ent_fecha, ent_cita_hora, ent_cita_motivo,
+            lista_pac_bd, lista_med_bd))
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
 
     #Boton Cancelar Cita
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=15)
-    
+
     # --- Sección Diferenciadora: Cancelación de Citas ---
     ttk.Separator(frame_citas, orient='horizontal').grid(row=7, column=0, columnspan=3, sticky='ew', pady=15)
     
@@ -307,9 +331,9 @@ def inicar_app():
     btn_cancelar.grid(row=10, column=0, columnspan=2, pady=10)
 
 
-
-######################################################################################################################
-######################################################################################################################
+# ==========================================================================================================================
+# 5. DISEÑO DE GESTIÓN DE CONSULTAS (REGISTRAR ATENCIÓN MÉDICA Y VER HISTORIAL CLÍNICO)
+# ==========================================================================================================================
 
     #pestaña para registrar atención médica (consultas)
     tk.Label(frame_consultas, text="Registrar Atención Médica", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
@@ -348,8 +372,9 @@ def inicar_app():
     btn_guardar_consulta.grid(row=5, column=0, columnspan=2, pady=20)
 
 
-##############################################################################################################
-##############################################################################################################
+#==========================================================================================================================
+# 6. PESTAÑA DE HISTORIAL CLÍNICO (CONSULTA Y EXPORTACIÓN A PDF)
+#==========================================================================================================================
 
     #pestaña para mostrar historial clínico del paciente
     tk.Label(frame_historial, text="Historial Clínico del Paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
@@ -368,7 +393,7 @@ def inicar_app():
     tree_historial.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
 
     btn_buscar_hist = ttk.Button(frame_historial, text="🔍 Ver Historial", 
-                command=lambda: obtener_historial_paciente(combo_historial_pac, tree_historial, lista_pac_bd))
+        command=lambda: obtener_historial_paciente(combo_historial_pac, tree_historial, lista_pac_bd))
     btn_buscar_hist.grid(row=2, column=0, columnspan=2, pady=10)
 
     tree_historial.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
@@ -376,6 +401,7 @@ def inicar_app():
     btn_exportar_pdf = ttk.Button(frame_historial, text="🖨️ Exportar Consulta a PDF", 
                                   command=lambda: exportar_pdf(tree_historial, combo_historial_pac))
     btn_exportar_pdf.grid(row=4, column=0, columnspan=2, pady=5)
+    combo_paciente_historial = ttk.Combobox(frame_historial, state="readonly")
 
 
     ventana.mainloop()

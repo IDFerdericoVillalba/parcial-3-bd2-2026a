@@ -7,7 +7,7 @@ def conectar_bd():
             host="localhost",  #tu servidor
             user="root", #tu usario 
             passwd="359Id12435", #tu contraseña
-            database="citas_medicas2" #tu base de datos
+            database="consultorio_medico" #tu base de datos
         )
 
         if conexion.is_connected():

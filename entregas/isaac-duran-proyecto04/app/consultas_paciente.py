@@ -13,10 +13,10 @@ def cargar_pacientes(tree):
             registros = cursor.fetchall()
             for fila in registros:
                 tree.insert("", tk.END, values=fila)
+            return registros
         except Exception as e:
             messagebox.showerror("Error", f"Error al cargar pacientes: {e}")
-        finally:
-            conexion.close()
+            return []
 
 def guardar_paciente(entradas, tree):
     nombre = entradas['nombre'].get()
