@@ -246,29 +246,20 @@ def inicar_app():
     nombres_pac = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd] # Nombre + Apellido - Documento
     nombres_med = [f"{m[1]} {m[2]}" for m in lista_med_bd]
 
-    # === AGREGA ESTA FUNCIÓN AQUÍ ===
     def actualizar_combos_citas():
-        # 1. Actualizamos la lista de pacientes vaciándola y volviéndola a llenar
-        # Usamos clear() y extend() para que el botón "Agendar" siga viendo la misma lista, pero con datos nuevos.
         lista_pac_bd.clear()
         lista_pac_bd.extend(obtener_pacientes_combo())
         
-        # 2. Actualizamos el texto visual del Combobox de pacientes
         nombres_pac_actualizados = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd]
         combo_cita_pac['values'] = nombres_pac_actualizados
         
-        # 3. Hacemos lo mismo para los médicos
-        # OJO: Verifica cómo tienes llamada tu lista de médicos. Aquí asumo que se llama lista_medicos_bd
         lista_medicos_bd.clear()
         
-        # Dependiendo de cómo cargues los médicos en tu código original, usa la función correspondiente.
-        # Si usaste cargar_tabla_medicos(tree_medicos), sería así:
         nuevos_medicos = cargar_tabla_medicos(tree_medicos)
         lista_medicos_bd.extend(nuevos_medicos)
         
         nombres_med_actualizados = [f"{m[1]} {m[2]}" for m in lista_medicos_bd]
         combo_cita_med['values'] = nombres_med_actualizados
-    # ================================
 
     # Combobox Paciente
     tk.Label(frame_citas, text="Paciente *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
