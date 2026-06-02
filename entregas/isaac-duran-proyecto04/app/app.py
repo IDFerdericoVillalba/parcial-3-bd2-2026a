@@ -309,8 +309,13 @@ def inicar_app():
     
     tk.Label(frame_citas, text="🚫 Cancelar una Cita Programada", font=("Arial", 11, "bold")).grid(row=8, column=0, columnspan=2, pady=5, sticky="w", padx=10)
 
+    def actualizar_combo_cancelar_citas():
+        global_citas_programadas_bd = obtener_citas_programadas()
+        citas_formateadas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in global_citas_programadas_bd]
+        combo_cancelar_cita['values'] = citas_formateadas
+
     tk.Label(frame_citas, text="Seleccionar Cita:").grid(row=9, column=0, padx=10, pady=5, sticky="e")
-    combo_cancelar_cita = ttk.Combobox(frame_citas, state="readonly", width=55)
+    combo_cancelar_cita = ttk.Combobox(frame_citas, state="readonly", postcommand=actualizar_combo_cancelar_citas, width=55)
     combo_cancelar_cita.grid(row=9, column=1, padx=10, pady=5, sticky="w")
 
     lista_citas_cancelar = []
@@ -339,8 +344,13 @@ def inicar_app():
     #pestaña para registrar atención médica (consultas)
     tk.Label(frame_consultas, text="Registrar Atención Médica", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
     tk.Label(frame_consultas, text="Seleccionar Cita *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+
+    def actualizar_combo_atender_citas():
+        global_citas_pendientes_bd = obtener_citas_pendientes()
+        citas_pendientes_formateadas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in global_citas_pendientes_bd]
+        combo_consultas_cita['values'] = citas_pendientes_formateadas
     
-    combo_consultas_cita = ttk.Combobox(frame_consultas, state="readonly", width=55)
+    combo_consultas_cita = ttk.Combobox(frame_consultas, state="readonly", postcommand=actualizar_combo_atender_citas, width=55)
     combo_consultas_cita.grid(row=1, column=1, padx=10, pady=5, sticky="w")
     
     lista_citas_pendientes = []
