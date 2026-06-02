@@ -150,14 +150,14 @@ def inicar_app():
     ent_med_correo.grid(row=4, column=1, padx=10, pady=6, sticky="w")
 
     # Columna Derecha: Selección de Especialidades Múltiples
-    ttk.Label(lf_form_medicos, text="Seleccione Especialidad(es) *\n(Use CTRL para elegir varias)").grid(row=0, column=2, padx=15, pady=5, sticky="ne")
+    ttk.Label(lf_form_medicos, text="Seleccione Especialidad(es)").grid(row=0, column=2, padx=15, pady=5, sticky="ne")
     
     # Frame interno para juntar el listbox con su scrollbar
     frame_listbox = ttk.Frame(lf_form_medicos)
     frame_listbox.grid(row=0, column=3, rowspan=4, padx=10, pady=5, sticky="nw")
 
-    # Listbox con selectmode="extended" para permitir selección múltiple
-    listbox_especialidades = tk.Listbox(frame_listbox, height=6, width=32, selectmode="extended", exportselection=0)
+    # Listbox con selectmode="multiple" para permitir selección múltiple
+    listbox_especialidades = tk.Listbox(frame_listbox, height=6, width=32, selectmode="multiple", exportselection=0)
     scrollbar_esp = ttk.Scrollbar(frame_listbox, orient="vertical", command=listbox_especialidades.yview)
     listbox_especialidades.configure(yscrollcommand=scrollbar_esp.set)
     
@@ -299,6 +299,11 @@ def inicar_app():
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
 
     #Boton Cancelar Cita
+    # === FUNCIÓN ENVOLTORIO PARA CANCELAR CITA ===
+    def ejecutar_cancelar_seguro():
+        citas_programadas_frescas = obtener_citas_programadas()
+        ejecutar_cancelacion_cita(combo_cancelar_cita, citas_programadas_frescas)
+    # =============================================
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=15)
 
     # --- Sección Diferenciadora: Cancelación de Citas ---
@@ -315,22 +320,7 @@ def inicar_app():
     combo_cancelar_cita = ttk.Combobox(frame_citas, state="readonly", postcommand=actualizar_combo_cancelar_citas, width=55)
     combo_cancelar_cita.grid(row=9, column=1, padx=10, pady=5, sticky="w")
 
-    lista_citas_cancelar = []
-
-    def refrescar_combo_cancelaciones():
-        nonlocal lista_citas_cancelar
-        lista_citas_cancelar = obtener_citas_programadas()
-        textos_citas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in lista_citas_cancelar]
-        combo_cancelar_cita['values'] = textos_citas
-
-    ttk.Button(frame_citas, text="🔄 Actualizar", command=refrescar_combo_cancelaciones).grid(row=9, column=2, padx=5)
-    
-    # Llamamos a la función para que cargue las citas existentes al abrir la app
-
-    refrescar_combo_cancelaciones()
-
-    btn_cancelar = ttk.Button(frame_citas, text="❌ Cancelar Cita", 
-        command=lambda: [ejecutar_cancelacion_cita(combo_cancelar_cita, lista_citas_cancelar), refrescar_combo_cancelaciones()])
+    btn_cancelar = ttk.Button(frame_citas, text="❌ Cancelar Cita", command=ejecutar_cancelar_seguro)
     btn_cancelar.grid(row=10, column=0, columnspan=2, pady=10)
 
 
@@ -340,24 +330,16 @@ def inicar_app():
     tk.Label(frame_consultas, text="Registrar Atención Médica", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
     tk.Label(frame_consultas, text="Seleccionar Cita *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
 
+    def obtener_formato_cita(c):
+        return f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
+    
     def actualizar_combo_atender_citas():
         global_citas_pendientes_bd = obtener_citas_pendientes()
-        citas_pendientes_formateadas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in global_citas_pendientes_bd]
+        citas_pendientes_formateadas = [obtener_formato_cita(c) for c in global_citas_pendientes_bd]
         combo_consultas_cita['values'] = citas_pendientes_formateadas
     
     combo_consultas_cita = ttk.Combobox(frame_consultas, state="readonly", postcommand=actualizar_combo_atender_citas, width=55)
     combo_consultas_cita.grid(row=1, column=1, padx=10, pady=5, sticky="w")
-    
-    lista_citas_pendientes = []
-
-    def refrescar_citas():
-        nonlocal lista_citas_pendientes
-        lista_citas_pendientes = obtener_citas_pendientes()
-        nombres_citas = [f"ID: {c[0]} | {c[1]} {c[2]} - Paciente: {c[3]} {c[4]}" for c in lista_citas_pendientes]
-        combo_consultas_cita['values'] = nombres_citas
-    
-    ttk.Button(frame_consultas, text="🔄 Recargar Citas", command=refrescar_citas).grid(row=1, column=2, padx=5)
-    refrescar_citas()
 
     # Entradas para la consulta
     tk.Label(frame_consultas, text="Diagnóstico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
@@ -372,9 +354,14 @@ def inicar_app():
     ent_med = ttk.Entry(frame_consultas, width=58)
     ent_med.grid(row=4, column=1, padx=10, pady=5, sticky="w")
 
+    # === FUNCIÓN ENVOLTORIO PARA REGISTRAR CONSULTA ===
+    def ejecutar_registro_consulta_seguro():
+        citas_frescas = obtener_citas_pendientes()
+        registrar_consulta_medica(combo_consultas_cita, ent_diag, ent_obs, ent_med, citas_frescas)
+    # ==================================================
+
     # Botón Guarda
-    btn_guardar_consulta = ttk.Button(frame_consultas, text="🩺 Guardar Consulta", 
-            command=lambda: registrar_consulta_medica(combo_consultas_cita, ent_diag, ent_obs, ent_med, lista_citas_pendientes))
+    btn_guardar_consulta = ttk.Button(frame_consultas, text="🩺 Guardar Consulta", command=ejecutar_registro_consulta_seguro)
     btn_guardar_consulta.grid(row=5, column=0, columnspan=2, pady=20)
 
 

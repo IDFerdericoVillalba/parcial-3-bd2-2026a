@@ -35,7 +35,7 @@ def registrar_consulta_medica(combo_cita, ent_diag, ent_obs, ent_med, lista_cita
 
     id_cita = None
     for c in lista_citas:
-        texto_combo = f"ID: {c[0]} | {c[1]} {c[2]} - Paciente: {c[3]} {c[4]}"
+        texto_combo = f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
         if texto_combo == cita_sel:
             id_cita = c[0]
             break
