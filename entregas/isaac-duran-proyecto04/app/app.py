@@ -123,8 +123,6 @@ def inicar_app():
     # =================================================================================================================
     # 2. DISEÑO DE GESTIÓN DE MÉDICOS (REDISEÑO MULTI-ESPECIALIDAD)
     # =================================================================================================================
-    
-    
     frame_medicos.columnconfigure(0, weight=1)
     # Contenedor 1: Formulario agrupado
     lf_form_medicos = ttk.LabelFrame(frame_medicos, text=" 📋 Formulario de Registro de Médico ", padding=(20, 15))
@@ -202,7 +200,6 @@ def inicar_app():
 # ==========================================================================================================================
 # 3. DISEÑO DE GESTIÓN DE HORARIOS (ASIGNACIÓN DE HORARIOS A MÉDICOS)
 # ==========================================================================================================================   
-
     # === AGREGA ESTA FUNCIÓN AQUÍ ===
     def actualizar_combo_horarios_medicos():
         lista_medicos_bd.clear()
@@ -246,7 +243,6 @@ def inicar_app():
 # ==========================================================================================================================
 # 4. DISEÑO DE GESTIÓN DE CITAS (AGENDAR Y CANCELAR CITAS)
 # ==========================================================================================================================
-
     tk.Label(frame_citas, text="Agendar Nueva Cita", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
 
     # Cargar datos para los combos
@@ -256,29 +252,26 @@ def inicar_app():
     nombres_pac = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd] # Nombre + Apellido - Documento
     nombres_med = [f"{m[1]} {m[2]}" for m in lista_med_bd]
 
-    def actualizar_combos_citas():
+    # =========================================================
+    def actualizar_pacientes_citas():
         lista_pac_bd.clear()
         lista_pac_bd.extend(obtener_pacientes_combo())
-        
-        nombres_pac_actualizados = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd]
-        combo_cita_pac['values'] = nombres_pac_actualizados
-        
-        lista_medicos_bd.clear()
-        
-        nuevos_medicos = cargar_tabla_medicos(tree_medicos)
-        lista_medicos_bd.extend(nuevos_medicos)
-        
-        nombres_med_actualizados = [f"{m[1]} {m[2]}" for m in lista_medicos_bd]
-        combo_cita_med['values'] = nombres_med_actualizados
-
+        combo_cita_pac['values'] = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd]
+    # =========================================================
     # Combobox Paciente
     tk.Label(frame_citas, text="Paciente *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
-    combo_cita_pac = ttk.Combobox(frame_citas, postcommand = actualizar_combos_citas, values=nombres_pac, state="readonly", width=40)
+    combo_cita_pac = ttk.Combobox(frame_citas, postcommand = actualizar_pacientes_citas, values=nombres_pac, state="readonly", width=40)
     combo_cita_pac.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
     # Combobox Médico
+    # =========================================================
+    def actualizar_medicos_citas():
+        lista_medicos_bd.clear()
+        lista_medicos_bd.extend(cargar_tabla_medicos(tree_medicos))
+        combo_cita_med['values'] = [f"{m[1]} {m[2]}" for m in lista_medicos_bd]
+    # =========================================================
     tk.Label(frame_citas, text="Médico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
-    combo_cita_med = ttk.Combobox(frame_citas, postcommand = actualizar_combos_citas, values=nombres_med, state="readonly", width=40)
+    combo_cita_med = ttk.Combobox(frame_citas, postcommand = actualizar_medicos_citas, values=nombres_med, state="readonly", width=40)
     combo_cita_med.grid(row=2, column=1, padx=10, pady=5, sticky="w")
 
     # Entradas de Texto (Fecha, Hora, Motivo)
@@ -296,9 +289,13 @@ def inicar_app():
     ent_cita_motivo.grid(row=5, column=1, padx=10, pady=5, sticky="w")
 
     # Botón Agendar
-    btn_agendar = ttk.Button(frame_citas, text="📅 Agendar Cita", 
-        command=lambda: agendar_cita(combo_cita_pac, combo_cita_med, ent_fecha, ent_cita_hora, ent_cita_motivo,
-            lista_pac_bd, lista_med_bd))
+    # === FUNCIÓN ENVOLTORIO PARA EL BOTÓN DE AGENDAR ===
+    def ejecutar_agendar_seguro():
+        pacientes_frescos = obtener_pacientes_combo()
+        medicos_frescos = cargar_tabla_medicos(tree_medicos) 
+        agendar_cita(combo_cita_pac, combo_cita_med, ent_fecha, ent_cita_hora, ent_cita_motivo, pacientes_frescos, medicos_frescos)
+    # ===================================================
+    btn_agendar = ttk.Button(frame_citas, text="📅 Agendar Cita", command=ejecutar_agendar_seguro)
     btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
 
     #Boton Cancelar Cita
@@ -340,8 +337,6 @@ def inicar_app():
 # ==========================================================================================================================
 # 5. DISEÑO DE GESTIÓN DE CONSULTAS (REGISTRAR ATENCIÓN MÉDICA Y VER HISTORIAL CLÍNICO)
 # ==========================================================================================================================
-
-    #pestaña para registrar atención médica (consultas)
     tk.Label(frame_consultas, text="Registrar Atención Médica", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
     tk.Label(frame_consultas, text="Seleccionar Cita *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
 
@@ -386,8 +381,6 @@ def inicar_app():
 #==========================================================================================================================
 # 6. PESTAÑA DE HISTORIAL CLÍNICO (CONSULTA Y EXPORTACIÓN A PDF)
 #==========================================================================================================================
-
-    #pestaña para mostrar historial clínico del paciente
     tk.Label(frame_historial, text="Historial Clínico del Paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
 
     def actualizar_combo_historial():
