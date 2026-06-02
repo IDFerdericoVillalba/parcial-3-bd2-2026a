@@ -5,7 +5,7 @@ from tkcalendar import DateEntry
 ##################################################################
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
-from consultas_horario import guardar_horario, cargar_medicos
+from consultas_horario import guardar_horario, cargar_medicos, cargar_tabla_horarios
 from consultas_cita import obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
@@ -197,33 +197,38 @@ def inicar_app():
     cargar_tabla_medicos(tree_medicos)
 
 
-# ==========================================================================================================================
-# 3. DISEÑO DE GESTIÓN DE HORARIOS (ASIGNACIÓN DE HORARIOS A MÉDICOS)
-# ==========================================================================================================================   
-    # === AGREGA ESTA FUNCIÓN AQUÍ ===
+    # ==========================================================================================================================
+    # 3. DISEÑO DE GESTIÓN DE HORARIOS (ASIGNACIÓN DE HORARIOS A MÉDICOS)
+    # ==========================================================================================================================   
     def actualizar_combo_horarios_medicos():
         lista_medicos_bd.clear()
         nuevos_medicos = cargar_tabla_medicos(tree_medicos)
         lista_medicos_bd.extend(nuevos_medicos)
-        
-        # Mapeamos los nombres para el Combobox
         nombres_med_actualizados = [f"{m[1]} {m[2]}" for m in lista_medicos_bd]
         combo_horario_medico['values'] = nombres_med_actualizados
-    # ================================
 
     #-----Medicos
     tk.Label(frame_horarios, text="Configurar Horario Medico", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
     tk.Label(frame_horarios, text="Médico *").grid(row=1, column=0, sticky="e", padx=10, pady=5)
     lista_medicos_bd = cargar_medicos()
     nombres_medicos = [f"{med[1]} {med[2]}" for med in lista_medicos_bd]
-    combo_horario_medico = ttk.Combobox(frame_horarios, values=nombres_medicos, postcommand = actualizar_combo_horarios_medicos, state="readonly", width=37)
+    combo_horario_medico = ttk.Combobox(frame_horarios, values=nombres_medicos, postcommand=actualizar_combo_horarios_medicos, state="readonly", width=37)
     combo_horario_medico.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
-    #-----Dias
-    tk.Label(frame_horarios, text="Día de la semana *").grid(row=2, column=0, sticky="e", padx=10, pady=5)
+    #-----Dias (Reemplazado por Listbox Múltiple)
+    tk.Label(frame_horarios, text="Días de la semana *\n(Clic para elegir varios)").grid(row=2, column=0, sticky="ne", padx=10, pady=5)
+    
+    frame_dias = ttk.Frame(frame_horarios)
+    frame_dias.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+    listbox_dias = tk.Listbox(frame_dias, height=4, width=39, selectmode="multiple", exportselection=0)
+    scrollbar_dias = ttk.Scrollbar(frame_dias, orient="vertical", command=listbox_dias.yview)
+    listbox_dias.configure(yscrollcommand=scrollbar_dias.set)
+    listbox_dias.pack(side="left", fill="y")
+    scrollbar_dias.pack(side="right", fill="y")
+
     dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
-    combo_dia = ttk.Combobox(frame_horarios, values=dias_semana, state="readonly", width=37)
-    combo_dia.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+    for dia in dias_semana:
+        listbox_dias.insert(tk.END, dia)
 
     #-----Horas
     entradas_horarios = {}
@@ -236,8 +241,23 @@ def inicar_app():
     entradas_horarios['hora_fin'].grid(row=4, column=1, padx=10, pady=5, sticky="w")
 
     #-----Boton Guardar
-    btn_guardar_horario = tk.Button(frame_horarios, text="⏰ Guardar Horario", command=lambda: guardar_horario(entradas_horarios, combo_horario_medico, combo_dia, lista_medicos_bd))
-    btn_guardar_horario.grid(row=5, column=0, columnspan=2, pady=20)
+    btn_guardar_horario = tk.Button(frame_horarios, text="⏰ Guardar Horario", 
+        command=lambda: guardar_horario(entradas_horarios, listbox_dias, combo_horario_medico, lista_medicos_bd, tree_horarios))
+    btn_guardar_horario.grid(row=5, column=0, columnspan=2, pady=10)
+
+    #-----Treeview para ver horarios registrados
+    from consultas_horario import cargar_tabla_horarios # Importamos aquí para usarla
+    
+    columnas_hor = ("Médico", "Días de Atención", "Inicio", "Fin")
+    tree_horarios = ttk.Treeview(frame_horarios, columns=columnas_hor, show="headings", height=8)
+    
+    anchos_hor = [150, 200, 80, 80]
+    for col, ancho in zip(columnas_hor, anchos_hor):
+        tree_horarios.heading(col, text=col)
+        tree_horarios.column(col, width=ancho, anchor="center")
+
+    tree_horarios.grid(row=6, column=0, columnspan=2, padx=20, pady=10)
+    cargar_tabla_horarios(tree_horarios)
 
 
 # ==========================================================================================================================
