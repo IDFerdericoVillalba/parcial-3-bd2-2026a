@@ -430,42 +430,55 @@ def inicar_app():
     btn_guardar_consulta.grid(row=4, column=0, columnspan=2, pady=30)
 
 
-#==========================================================================================================================
-# 6. PESTAÑA DE HISTORIAL CLÍNICO (CONSULTA Y EXPORTACIÓN A PDF)
-#==========================================================================================================================
-    tk.Label(frame_historial, text="Historial Clínico del Paciente", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+# ==========================================================================================================================
+# 6. DISEÑO DE HISTORIAL CLÍNICO
+# ==========================================================================================================================
+    frame_historial.columnconfigure(0, weight=1)
 
-    def actualizar_combo_historial():
-        lista_pac_bd.clear()
-        lista_pac_bd.extend(obtener_pacientes_combo())
-        
-        nombres_pac_actualizados = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd]
-        combo_historial_pac['values'] = nombres_pac_actualizados
+    # --- CONTENEDOR 1: BUSCADOR ---
+    lf_buscador_historial = ttk.LabelFrame(frame_historial, text=" 🔍 Buscar Historial de Paciente ", padding=(20, 15))
+    lf_buscador_historial.grid(row=0, column=0, padx=20, pady=15, sticky="nsew")
 
-    tk.Label(frame_historial, text="Buscar Paciente:").grid(row=1, column=0, padx=10, pady=5, sticky="e")
-    combo_historial_pac = ttk.Combobox(frame_historial, values=nombres_pac, state="readonly", width=50, postcommand=actualizar_combo_historial)
-    combo_historial_pac.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+    lista_pac_historial_bd = obtener_pacientes_combo()
+    nombres_pac_historial = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_historial_bd]
 
-    columnas_hist = ("Fecha", "Médico", "Diagnóstico", "Observaciones", "Tratamiento")
-    tree_historial = ttk.Treeview(frame_historial, columns=columnas_hist, show="headings", height=10)
+    def actualizar_combo_historial_pac():
+        lista_pac_historial_bd.clear()
+        lista_pac_historial_bd.extend(obtener_pacientes_combo())
+        combo_historial_pac['values'] = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_historial_bd]
+
+    ttk.Label(lf_buscador_historial, text="Seleccionar Paciente *").grid(row=0, column=0, padx=10, pady=10, sticky="e")
+    combo_historial_pac = ttk.Combobox(lf_buscador_historial, state="readonly", postcommand=actualizar_combo_historial_pac, values=nombres_pac_historial, width=50)
+    combo_historial_pac.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
+    # RECTIFICACIÓN: Función segura para garantizar datos frescos al buscar
+    def ejecutar_buscar_historial_seguro():
+        pacientes_frescos = obtener_pacientes_combo()
+        obtener_historial_paciente(combo_historial_pac, tree_historial, pacientes_frescos)
+
+    btn_buscar_historial = ttk.Button(lf_buscador_historial, text="🔍 Buscar", style="Accent.TButton", command=ejecutar_buscar_historial_seguro)
+    btn_buscar_historial.grid(row=0, column=2, padx=10, pady=10)
+
+
+    # --- CONTENEDOR 2: RESULTADOS Y EXPORTACIÓN ---
+    lf_resultados_historial = ttk.LabelFrame(frame_historial, text=" 📄 Registros Clínicos ", padding=(10, 10))
+    lf_resultados_historial.grid(row=1, column=0, padx=20, pady=5, sticky="nsew")
+
+    columnas_hist = ("Fecha", "Médico Tratante", "Diagnóstico Médico", "Observaciones", "Tratamiento / Medicamento")
+    tree_historial = ttk.Treeview(lf_resultados_historial, columns=columnas_hist, show="headings", height=10)
+
+    anchos_hist = [90, 150, 200, 200, 200]
+    for col, ancho in zip(columnas_hist, anchos_hist):
+        tree_historial.heading(col, text=col)
+        tree_historial.column(col, width=ancho, anchor="center")
+
+    tree_historial.pack(fill="both", expand=True, padx=10, pady=10)
+
+    # Botón Exportar PDF (Queda debajo de la tabla)
+    btn_exportar_pdf = ttk.Button(lf_resultados_historial, text="📄 Exportar Consulta a PDF", command=lambda: exportar_pdf(tree_historial, combo_historial_pac))
+    btn_exportar_pdf.pack(pady=10)
+
     
-    anchos = [90, 150, 200, 150, 150]
-    for col, ancho in zip(columnas_hist, anchos):tree_historial.heading(col, text=col)
-    tree_historial.column(col, width=ancho, anchor="center")
-        
-    tree_historial.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
-
-    btn_buscar_hist = ttk.Button(frame_historial, text="🔍 Ver Historial", 
-        command=lambda: obtener_historial_paciente(combo_historial_pac, tree_historial, lista_pac_bd))
-    btn_buscar_hist.grid(row=2, column=0, columnspan=2, pady=10)
-
-    tree_historial.grid(row=3, column=0, columnspan=2, padx=20, pady=20)
-    # Botón para exportar a PDF la consulta seleccionada de la tabla (Elemento diferenciador)
-    btn_exportar_pdf = ttk.Button(frame_historial, text="🖨️ Exportar Consulta a PDF", 
-                                  command=lambda: exportar_pdf(tree_historial, combo_historial_pac))
-    btn_exportar_pdf.grid(row=4, column=0, columnspan=2, pady=5)
-    combo_paciente_historial = ttk.Combobox(frame_historial, state="readonly")
-
 
     ventana.mainloop()
 if __name__ == "__main__":
