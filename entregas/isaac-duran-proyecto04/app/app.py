@@ -295,23 +295,35 @@ def inicar_app():
     combo_cita_pac = ttk.Combobox(lf_form_citas, postcommand=actualizar_pacientes_citas, values=nombres_pac, state="readonly", width=40)
     combo_cita_pac.grid(row=0, column=1, padx=10, pady=8, sticky="w")
 
-    # Combobox Médico y Especialidad
+    # Combobox Médico
     def actualizar_medicos_citas():
         lista_med_bd.clear()
         lista_med_bd.extend(cargar_medicos())
         combo_cita_med['values'] = [f"{m[1]} {m[2]}" for m in lista_med_bd]
 
-    ttk.Label(lf_form_citas, text="Médico *").grid(row=1, column=0, padx=10, pady=8, sticky="e")
+    ttk.Label(lf_form_citas, text="Médico *").grid(row=1, column=0, padx=10, pady=(8, 0), sticky="e")
     combo_cita_med = ttk.Combobox(lf_form_citas, postcommand=actualizar_medicos_citas, values=nombres_med, state="readonly", width=40)
-    combo_cita_med.grid(row=1, column=1, padx=10, pady=8, sticky="w")
+    combo_cita_med.grid(row=1, column=1, padx=10, pady=(8, 0), sticky="w")
 
-    lbl_especialidades = tk.Label(lf_form_citas, text="Especialidad: (Seleccione un médico)", fg="gray", font=("Arial", 9, "italic"))
-    lbl_especialidades.grid(row=1, column=2, padx=10, sticky="w")
+    # --- NUEVO DISEÑO: TARJETA DE ESPECIALIDAD ---
+    # Un Frame estilizado que actúa como una "caja de alerta" informativa
+    frame_info_medico = tk.Frame(lf_form_citas, bg="#F0F4F8", highlightbackground="#B0C4DE", highlightthickness=1)
+    frame_info_medico.grid(row=2, column=1, padx=10, pady=(4, 10), sticky="w")
+
+    lbl_icono = tk.Label(frame_info_medico, text="⚕️ Especialidad:", bg="#F0F4F8", fg="#2B579A", font=("Arial", 9, "bold"))
+    lbl_icono.pack(side="left", padx=(8, 2), pady=4)
+
+    lbl_especialidades = tk.Label(frame_info_medico, text="(Seleccione un médico)", bg="#F0F4F8", fg="#666666", font=("Arial", 9, "italic"))
+    lbl_especialidades.pack(side="left", padx=(0, 8), pady=4)
     
     def mostrar_especialidades(event):
         med_sel = combo_cita_med.get()
         if not med_sel:
-            lbl_especialidades.config(text="Especialidad: (Seleccione un médico)", fg="gray")
+            # Apariencia apagada si no hay selección
+            lbl_especialidades.config(text="(Seleccione un médico)", fg="#666666", font=("Arial", 9, "italic"))
+            frame_info_medico.config(bg="#F0F4F8", highlightbackground="#B0C4DE")
+            lbl_icono.config(bg="#F0F4F8")
+            lbl_especialidades.config(bg="#F0F4F8")
             return
         
         id_medico = None
@@ -322,33 +334,38 @@ def inicar_app():
         
         if id_medico:
             especialidades = obtener_especialidades_medico(id_medico)
-            texto_esp = ", ".join(especialidades) if especialidades else "General"
-            lbl_especialidades.config(text=f"Especialidad(es): {texto_esp}", fg="#2B579A", font=("Arial", 9, "bold"))
+            texto_esp = " • ".join(especialidades) if especialidades else "Medicina General"
+            
+            # Apariencia encendida (azul clínico) al detectar especialidades
+            lbl_especialidades.config(text=texto_esp, fg="#004A99", font=("Arial", 9, "bold"))
+            frame_info_medico.config(bg="#E8F0FE", highlightbackground="#8DB6CD")
+            lbl_icono.config(bg="#E8F0FE")
+            lbl_especialidades.config(bg="#E8F0FE")
 
     combo_cita_med.bind("<<ComboboxSelected>>", mostrar_especialidades)
+    # -----------------------------------------------
 
-    # Entradas de Fecha, Hora y Motivo
-    ttk.Label(lf_form_citas, text="Seleccionar Fecha *").grid(row=2, column=0, padx=10, pady=8, sticky="e")
+    # Entradas de Fecha, Hora y Motivo (Se movieron a las filas 3, 4 y 5)
+    ttk.Label(lf_form_citas, text="Seleccionar Fecha *").grid(row=3, column=0, padx=10, pady=8, sticky="e")
     ent_fecha = DateEntry(lf_form_citas, width=38, background='#2B579A', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
-    ent_fecha.grid(row=2, column=1, padx=10, pady=8, sticky="w")
+    ent_fecha.grid(row=3, column=1, padx=10, pady=8, sticky="w")
     
-    ttk.Label(lf_form_citas, text="Hora (HH:MM) *").grid(row=3, column=0, padx=10, pady=8, sticky="e")
+    ttk.Label(lf_form_citas, text="Hora (HH:MM) *").grid(row=4, column=0, padx=10, pady=8, sticky="e")
     ent_cita_hora = ttk.Entry(lf_form_citas, width=43)
-    ent_cita_hora.grid(row=3, column=1, padx=10, pady=8, sticky="w")
+    ent_cita_hora.grid(row=4, column=1, padx=10, pady=8, sticky="w")
 
-    ttk.Label(lf_form_citas, text="Motivo de consulta *").grid(row=4, column=0, padx=10, pady=8, sticky="e")
+    ttk.Label(lf_form_citas, text="Motivo de consulta *").grid(row=5, column=0, padx=10, pady=8, sticky="e")
     ent_cita_motivo = ttk.Entry(lf_form_citas, width=43)
-    ent_cita_motivo.grid(row=4, column=1, padx=10, pady=8, sticky="w")
+    ent_cita_motivo.grid(row=5, column=1, padx=10, pady=8, sticky="w")
 
-    # Botón Agendar
+    # Botón Agendar (Se movió a la fila 6)
     def ejecutar_agendar_seguro():
         pacientes_frescos = obtener_pacientes_combo()
-        # RECTIFICACIÓN: Obtenemos datos directamente de BD, no del treeview
         medicos_frescos = cargar_medicos() 
         agendar_cita(combo_cita_pac, combo_cita_med, ent_fecha, ent_cita_hora, ent_cita_motivo, pacientes_frescos, medicos_frescos)
 
     btn_agendar = ttk.Button(lf_form_citas, text="📅 Agendar Cita", style="Accent.TButton", command=ejecutar_agendar_seguro)
-    btn_agendar.grid(row=5, column=0, columnspan=3, pady=20)
+    btn_agendar.grid(row=6, column=0, columnspan=3, pady=20)
 
 
     # --- CONTENEDOR 2: CANCELAR CITA ---
