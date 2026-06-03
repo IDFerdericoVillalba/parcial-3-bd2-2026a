@@ -154,3 +154,23 @@ def ejecutar_cancelacion_cita(combo_cancelar, lista_citas):
             messagebox.showerror("Error", f"No se pudo cancelar la cita: {e}")
         finally:
             conexion.close()
+
+
+def obtener_especialidades_medico(id_medico):
+    conexion = conectar_bd()
+    especialidades = []
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            sql = """
+                SELECT e.nombre 
+                FROM especialidades e
+                JOIN medico_especialidad me ON e.id_especialidad = me.id_especialidad
+                WHERE me.id_medico = %s
+            """
+            cursor.execute(sql, (id_medico,))
+            resultados = cursor.fetchall()
+            especialidades = [fila[0] for fila in resultados] 
+        finally:
+            conexion.close()
+    return especialidades

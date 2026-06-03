@@ -6,11 +6,11 @@ from tkcalendar import DateEntry
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
 from consultas_horario import guardar_horario, cargar_medicos, cargar_tabla_horarios
-from consultas_cita import obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita
+from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita, obtener_pacientes_combo
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
 
-################################################################
+################################################################–
 ################################################################
 
 
@@ -286,13 +286,37 @@ def inicar_app():
     # Combobox Médico
     # =========================================================
     def actualizar_medicos_citas():
-        lista_medicos_bd.clear()
-        lista_medicos_bd.extend(cargar_tabla_medicos(tree_medicos))
-        combo_cita_med['values'] = [f"{m[1]} {m[2]}" for m in lista_medicos_bd]
+        lista_med_bd.clear()
+        lista_med_bd.extend(cargar_medicos())
+        combo_cita_med['values'] = [f"{m[1]} {m[2]}" for m in lista_med_bd]
     # =========================================================
+    
     tk.Label(frame_citas, text="Médico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
     combo_cita_med = ttk.Combobox(frame_citas, postcommand = actualizar_medicos_citas, values=nombres_med, state="readonly", width=40)
     combo_cita_med.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+
+    lbl_especialidades = tk.Label(frame_citas, text="Especialidad: (Seleccione un médico)", fg="gray", font=("Arial", 9, "italic"))
+    lbl_especialidades.grid(row=2, column=2, padx=10, sticky="w")
+    
+    def mostrar_especialidades(event):
+        med_sel = combo_cita_med.get()
+        if not med_sel:
+            lbl_especialidades.config(text="Especialidad: (Seleccione un médico)", fg="gray")
+            return
+        
+        id_medico = None
+        for m in lista_med_bd:
+            if f"{m[1]} {m[2]}" == med_sel:
+                id_medico = m[0]
+                break
+        
+        if id_medico:
+            especialidades = obtener_especialidades_medico(id_medico)
+            texto_esp = ", ".join(especialidades) if especialidades else "General"
+            lbl_especialidades.config(text=f"Especialidad(es): {texto_esp}", fg="#2B579A", font=("Arial", 9, "bold"))
+
+    combo_cita_med.bind("<<ComboboxSelected>>", mostrar_especialidades)
+    # --------------------------------------------------------
 
     # Entradas de Texto (Fecha, Hora, Motivo)
     tk.Label(frame_citas, text="Seleccionar Fecha:").grid(row=3, column=0, padx=10, pady=5, sticky="e")
@@ -324,7 +348,6 @@ def inicar_app():
         citas_programadas_frescas = obtener_citas_programadas()
         ejecutar_cancelacion_cita(combo_cancelar_cita, citas_programadas_frescas)
     # =============================================
-    btn_agendar.grid(row=6, column=0, columnspan=2, pady=15)
 
     # --- Sección Diferenciadora: Cancelación de Citas ---
     ttk.Separator(frame_citas, orient='horizontal').grid(row=7, column=0, columnspan=3, sticky='ew', pady=15)
