@@ -273,40 +273,40 @@ def inicar_app():
 # ==========================================================================================================================
 # 4. DISEÑO DE GESTIÓN DE CITAS (AGENDAR Y CANCELAR CITAS)
 # ==========================================================================================================================
-    tk.Label(frame_citas, text="Agendar Nueva Cita", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+    frame_citas.columnconfigure(0, weight=1)
 
-    # Cargar datos para los combos
+    # --- CONTENEDOR 1: AGENDAR CITA ---
+    lf_form_citas = ttk.LabelFrame(frame_citas, text=" 📅 Formulario para Agendar Nueva Cita ", padding=(20, 15))
+    lf_form_citas.grid(row=0, column=0, padx=20, pady=15, sticky="nsew")
+
+    # Cargar datos iniciales
     lista_pac_bd = obtener_pacientes_combo()
     lista_med_bd = cargar_medicos()
-    
-    nombres_pac = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd] # Nombre + Apellido - Documento
+    nombres_pac = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd] 
     nombres_med = [f"{m[1]} {m[2]}" for m in lista_med_bd]
 
-    # =========================================================
+    # Combobox Paciente
     def actualizar_pacientes_citas():
         lista_pac_bd.clear()
         lista_pac_bd.extend(obtener_pacientes_combo())
         combo_cita_pac['values'] = [f"{p[1]} {p[2]} - {p[3]}" for p in lista_pac_bd]
-    # =========================================================
-    # Combobox Paciente
-    tk.Label(frame_citas, text="Paciente *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
-    combo_cita_pac = ttk.Combobox(frame_citas, postcommand = actualizar_pacientes_citas, values=nombres_pac, state="readonly", width=40)
-    combo_cita_pac.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
-    # Combobox Médico
-    # =========================================================
+    ttk.Label(lf_form_citas, text="Paciente *").grid(row=0, column=0, padx=10, pady=8, sticky="e")
+    combo_cita_pac = ttk.Combobox(lf_form_citas, postcommand=actualizar_pacientes_citas, values=nombres_pac, state="readonly", width=40)
+    combo_cita_pac.grid(row=0, column=1, padx=10, pady=8, sticky="w")
+
+    # Combobox Médico y Especialidad
     def actualizar_medicos_citas():
         lista_med_bd.clear()
         lista_med_bd.extend(cargar_medicos())
         combo_cita_med['values'] = [f"{m[1]} {m[2]}" for m in lista_med_bd]
-    # =========================================================
-    
-    tk.Label(frame_citas, text="Médico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
-    combo_cita_med = ttk.Combobox(frame_citas, postcommand = actualizar_medicos_citas, values=nombres_med, state="readonly", width=40)
-    combo_cita_med.grid(row=2, column=1, padx=10, pady=5, sticky="w")
 
-    lbl_especialidades = tk.Label(frame_citas, text="Especialidad: (Seleccione un médico)", fg="gray", font=("Arial", 9, "italic"))
-    lbl_especialidades.grid(row=2, column=2, padx=10, sticky="w")
+    ttk.Label(lf_form_citas, text="Médico *").grid(row=1, column=0, padx=10, pady=8, sticky="e")
+    combo_cita_med = ttk.Combobox(lf_form_citas, postcommand=actualizar_medicos_citas, values=nombres_med, state="readonly", width=40)
+    combo_cita_med.grid(row=1, column=1, padx=10, pady=8, sticky="w")
+
+    lbl_especialidades = tk.Label(lf_form_citas, text="Especialidad: (Seleccione un médico)", fg="gray", font=("Arial", 9, "italic"))
+    lbl_especialidades.grid(row=1, column=2, padx=10, sticky="w")
     
     def mostrar_especialidades(event):
         med_sel = combo_cita_med.get()
@@ -326,62 +326,59 @@ def inicar_app():
             lbl_especialidades.config(text=f"Especialidad(es): {texto_esp}", fg="#2B579A", font=("Arial", 9, "bold"))
 
     combo_cita_med.bind("<<ComboboxSelected>>", mostrar_especialidades)
-    # --------------------------------------------------------
 
-    # Entradas de Texto (Fecha, Hora, Motivo)
-    tk.Label(frame_citas, text="Seleccionar Fecha:").grid(row=3, column=0, padx=10, pady=5, sticky="e")
-    ent_fecha = DateEntry(frame_citas, width=19, background='darkblue',
-        foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
-    ent_fecha.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+    # Entradas de Fecha, Hora y Motivo
+    ttk.Label(lf_form_citas, text="Seleccionar Fecha *").grid(row=2, column=0, padx=10, pady=8, sticky="e")
+    ent_fecha = DateEntry(lf_form_citas, width=38, background='#2B579A', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
+    ent_fecha.grid(row=2, column=1, padx=10, pady=8, sticky="w")
     
-    tk.Label(frame_citas, text="Hora (HH:MM) *").grid(row=4, column=0, padx=10, pady=5, sticky="e")
-    ent_cita_hora = ttk.Entry(frame_citas, width=43)
-    ent_cita_hora.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+    ttk.Label(lf_form_citas, text="Hora (HH:MM) *").grid(row=3, column=0, padx=10, pady=8, sticky="e")
+    ent_cita_hora = ttk.Entry(lf_form_citas, width=43)
+    ent_cita_hora.grid(row=3, column=1, padx=10, pady=8, sticky="w")
 
-    tk.Label(frame_citas, text="Motivo de consulta *").grid(row=5, column=0, padx=10, pady=5, sticky="e")
-    ent_cita_motivo = ttk.Entry(frame_citas, width=43)
-    ent_cita_motivo.grid(row=5, column=1, padx=10, pady=5, sticky="w")
+    ttk.Label(lf_form_citas, text="Motivo de consulta *").grid(row=4, column=0, padx=10, pady=8, sticky="e")
+    ent_cita_motivo = ttk.Entry(lf_form_citas, width=43)
+    ent_cita_motivo.grid(row=4, column=1, padx=10, pady=8, sticky="w")
 
     # Botón Agendar
-    # === FUNCIÓN ENVOLTORIO PARA EL BOTÓN DE AGENDAR ===
     def ejecutar_agendar_seguro():
         pacientes_frescos = obtener_pacientes_combo()
-        medicos_frescos = cargar_tabla_medicos(tree_medicos) 
+        # RECTIFICACIÓN: Obtenemos datos directamente de BD, no del treeview
+        medicos_frescos = cargar_medicos() 
         agendar_cita(combo_cita_pac, combo_cita_med, ent_fecha, ent_cita_hora, ent_cita_motivo, pacientes_frescos, medicos_frescos)
-    # ===================================================
-    btn_agendar = ttk.Button(frame_citas, text="📅 Agendar Cita", command=ejecutar_agendar_seguro)
-    btn_agendar.grid(row=6, column=0, columnspan=2, pady=20)
 
-    #Boton Cancelar Cita
-    # === FUNCIÓN ENVOLTORIO PARA CANCELAR CITA ===
+    btn_agendar = ttk.Button(lf_form_citas, text="📅 Agendar Cita", style="Accent.TButton", command=ejecutar_agendar_seguro)
+    btn_agendar.grid(row=5, column=0, columnspan=3, pady=20)
+
+
+    # --- CONTENEDOR 2: CANCELAR CITA ---
+    lf_cancelar_citas = ttk.LabelFrame(frame_citas, text=" 🚫 Cancelar Cita Programada ", padding=(20, 15))
+    lf_cancelar_citas.grid(row=1, column=0, padx=20, pady=5, sticky="nsew")
+
     def ejecutar_cancelar_seguro():
         citas_programadas_frescas = obtener_citas_programadas()
         ejecutar_cancelacion_cita(combo_cancelar_cita, citas_programadas_frescas)
-    # =============================================
-
-    # --- Sección Diferenciadora: Cancelación de Citas ---
-    ttk.Separator(frame_citas, orient='horizontal').grid(row=7, column=0, columnspan=3, sticky='ew', pady=15)
-    
-    tk.Label(frame_citas, text="🚫 Cancelar una Cita Programada", font=("Arial", 11, "bold")).grid(row=8, column=0, columnspan=2, pady=5, sticky="w", padx=10)
 
     def actualizar_combo_cancelar_citas():
         global_citas_programadas_bd = obtener_citas_programadas()
         citas_formateadas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in global_citas_programadas_bd]
         combo_cancelar_cita['values'] = citas_formateadas
 
-    tk.Label(frame_citas, text="Seleccionar Cita:").grid(row=9, column=0, padx=10, pady=5, sticky="e")
-    combo_cancelar_cita = ttk.Combobox(frame_citas, state="readonly", postcommand=actualizar_combo_cancelar_citas, width=55)
-    combo_cancelar_cita.grid(row=9, column=1, padx=10, pady=5, sticky="w")
+    ttk.Label(lf_cancelar_citas, text="Seleccionar Cita:").grid(row=0, column=0, padx=10, pady=10, sticky="e")
+    combo_cancelar_cita = ttk.Combobox(lf_cancelar_citas, state="readonly", postcommand=actualizar_combo_cancelar_citas, width=65)
+    combo_cancelar_cita.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
-    btn_cancelar = ttk.Button(frame_citas, text="❌ Cancelar Cita", command=ejecutar_cancelar_seguro)
-    btn_cancelar.grid(row=10, column=0, columnspan=2, pady=10)
+    btn_cancelar = ttk.Button(lf_cancelar_citas, text="❌ Cancelar Cita", command=ejecutar_cancelar_seguro)
+    btn_cancelar.grid(row=1, column=0, columnspan=2, pady=10)
 
 
 # ==========================================================================================================================
-# 5. DISEÑO DE GESTIÓN DE CONSULTAS (REGISTRAR ATENCIÓN MÉDICA Y VER HISTORIAL CLÍNICO)
+# 5. DISEÑO DE GESTIÓN DE CONSULTAS (REGISTRAR ATENCIÓN MÉDICA)
 # ==========================================================================================================================
-    tk.Label(frame_consultas, text="Registrar Atención Médica", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
-    tk.Label(frame_consultas, text="Seleccionar Cita *").grid(row=1, column=0, padx=10, pady=5, sticky="e")
+    frame_consultas.columnconfigure(0, weight=1)
+
+    lf_form_consultas = ttk.LabelFrame(frame_consultas, text=" 🩺 Formulario de Registro de Atención Médica ", padding=(20, 25))
+    lf_form_consultas.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
     def obtener_formato_cita(c):
         return f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
@@ -391,31 +388,29 @@ def inicar_app():
         citas_pendientes_formateadas = [obtener_formato_cita(c) for c in global_citas_pendientes_bd]
         combo_consultas_cita['values'] = citas_pendientes_formateadas
     
-    combo_consultas_cita = ttk.Combobox(frame_consultas, state="readonly", postcommand=actualizar_combo_atender_citas, width=55)
-    combo_consultas_cita.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+    ttk.Label(lf_form_consultas, text="Seleccionar Cita *").grid(row=0, column=0, padx=10, pady=10, sticky="e")
+    combo_consultas_cita = ttk.Combobox(lf_form_consultas, state="readonly", postcommand=actualizar_combo_atender_citas, width=65)
+    combo_consultas_cita.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
-    # Entradas para la consulta
-    tk.Label(frame_consultas, text="Diagnóstico *").grid(row=2, column=0, padx=10, pady=5, sticky="e")
-    ent_diag = ttk.Entry(frame_consultas, width=58)
-    ent_diag.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+    ttk.Label(lf_form_consultas, text="Diagnóstico *").grid(row=1, column=0, padx=10, pady=10, sticky="e")
+    ent_diag = ttk.Entry(lf_form_consultas, width=68)
+    ent_diag.grid(row=1, column=1, padx=10, pady=10, sticky="w")
 
-    tk.Label(frame_consultas, text="Observaciones").grid(row=3, column=0, padx=10, pady=5, sticky="e")
-    ent_obs = ttk.Entry(frame_consultas, width=58)
-    ent_obs.grid(row=3, column=1, padx=10, pady=5, sticky="w")
+    ttk.Label(lf_form_consultas, text="Observaciones").grid(row=2, column=0, padx=10, pady=10, sticky="e")
+    ent_obs = ttk.Entry(lf_form_consultas, width=68)
+    ent_obs.grid(row=2, column=1, padx=10, pady=10, sticky="w")
 
-    tk.Label(frame_consultas, text="Medicamento/Tratamiento *").grid(row=4, column=0, padx=10, pady=5, sticky="e")
-    ent_med = ttk.Entry(frame_consultas, width=58)
-    ent_med.grid(row=4, column=1, padx=10, pady=5, sticky="w")
+    ttk.Label(lf_form_consultas, text="Medicamento/Tratamiento *").grid(row=3, column=0, padx=10, pady=10, sticky="e")
+    ent_med = ttk.Entry(lf_form_consultas, width=68)
+    ent_med.grid(row=3, column=1, padx=10, pady=10, sticky="w")
 
-    # === FUNCIÓN ENVOLTORIO PARA REGISTRAR CONSULTA ===
+    # Función envoltorio para asegurar datos frescos al guardar
     def ejecutar_registro_consulta_seguro():
         citas_frescas = obtener_citas_pendientes()
         registrar_consulta_medica(combo_consultas_cita, ent_diag, ent_obs, ent_med, citas_frescas)
-    # ==================================================
 
-    # Botón Guarda
-    btn_guardar_consulta = ttk.Button(frame_consultas, text="🩺 Guardar Consulta", command=ejecutar_registro_consulta_seguro)
-    btn_guardar_consulta.grid(row=5, column=0, columnspan=2, pady=20)
+    btn_guardar_consulta = ttk.Button(lf_form_consultas, text="🩺 Guardar Registro Clínico", style="Accent.TButton", command=ejecutar_registro_consulta_seguro)
+    btn_guardar_consulta.grid(row=4, column=0, columnspan=2, pady=30)
 
 
 #==========================================================================================================================
