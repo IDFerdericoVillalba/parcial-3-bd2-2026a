@@ -1,12 +1,12 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
 import sv_ttk
 from tkcalendar import DateEntry
 ##################################################################
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
 from consultas_horario import guardar_horario, cargar_medicos, cargar_tabla_horarios
-from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita, obtener_pacientes_combo
+from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
 
@@ -179,7 +179,7 @@ def inicar_app():
 
     # Botón Principal
     btn_guardar_med = ttk.Button(lf_form_medicos, text="💾 Guardar Nuevo Médico", style="Accent.TButton",
-                                 command=lambda: guardar_medico(entradas_medico, listbox_especialidades, lista_esp_bd, tree_medicos))
+        command=lambda: guardar_medico(entradas_medico, listbox_especialidades, lista_esp_bd, tree_medicos))
     btn_guardar_med.grid(row=5, column=0, columnspan=4, pady=15)
 
     # Contenedor 2: Tabla de Médicos Registrados
@@ -265,8 +265,6 @@ def inicar_app():
                                     command=lambda: guardar_horario(entradas_horarios, listbox_dias, combo_horario_medico, lista_medicos_bd, tree_horarios))
     btn_guardar_horario.grid(row=4, column=0, columnspan=2, pady=15)
 
-    # Cargar datos en la tabla al inicio
-    from consultas_horario import cargar_tabla_horarios 
     cargar_tabla_horarios(tree_horarios)
 
 
@@ -475,10 +473,10 @@ def inicar_app():
     tree_historial.pack(fill="both", expand=True, padx=10, pady=10)
 
     # Botón Exportar PDF (Queda debajo de la tabla)
-    btn_exportar_pdf = ttk.Button(lf_resultados_historial, text="📄 Exportar Consulta a PDF", command=lambda: exportar_pdf(tree_historial, combo_historial_pac))
+    btn_exportar_pdf = ttk.Button(lf_resultados_historial, text="📄 Exportar Consulta a PDF", style="Accent.TButton", command=lambda: exportar_pdf(tree_historial, combo_historial_pac))
     btn_exportar_pdf.pack(pady=10)
 
-    
+
 
     ventana.mainloop()
 if __name__ == "__main__":
