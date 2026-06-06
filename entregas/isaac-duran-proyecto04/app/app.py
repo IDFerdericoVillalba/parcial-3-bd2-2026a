@@ -18,7 +18,13 @@ def inicar_app():
     #ventana principal
     ventana = tk.Tk()
     ventana.title("Sistema de Gestión - Consulta Médico")
-    ventana.geometry("900x700")
+    ventana.geometry("1024x768") # Tamaño base de respaldo
+    
+    # Intentar maximizar la ventana según el sistema operativo (Windows/Linux/Mac)
+    try:
+        ventana.state('zoomed') 
+    except tk.TclError:
+        ventana.attributes('-zoomed', True)
 
     #FUNCIÓN: SELECTOR DE FECHAS A PRUEBA DE BUGS
     def abrir_calendario_seguro(entry_widget):
