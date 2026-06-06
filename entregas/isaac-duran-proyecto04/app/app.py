@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import sv_ttk
-from tkcalendar import DateEntry
+from tkcalendar import Calendar
 ##################################################################
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
@@ -15,11 +15,30 @@ from historial import obtener_historial_paciente, exportar_pdf
 
 
 def inicar_app():
-
     #ventana principal
     ventana = tk.Tk()
     ventana.title("Sistema de Gestión - Consulta Médico")
     ventana.geometry("900x700")
+
+    # --- NUEVA FUNCIÓN: SELECTOR DE FECHAS A PRUEBA DE BUGS ---
+    def abrir_calendario_seguro(entry_widget):
+        top = tk.Toplevel(ventana)
+        top.title("Elegir Fecha")
+        x = entry_widget.winfo_rootx()
+        y = entry_widget.winfo_rooty() + 30
+        top.geometry(f"+{x}+{y}")
+        top.grab_set()
+        cal = Calendar(top, selectmode='day', date_pattern='yyyy-mm-dd', background='#2B579A', foreground='white')
+        cal.pack(padx=15, pady=10)
+        
+        def confirmar_fecha():
+            entry_widget.config(state="normal")
+            entry_widget.delete(0, tk.END)
+            entry_widget.insert(0, cal.get_date())
+            entry_widget.config(state="readonly")
+            top.destroy()     
+        ttk.Button(top, text="✔ Confirmar Fecha", style="Accent.TButton", command=confirmar_fecha).pack(pady=(0, 10))
+    # -----------------------------------------------------------
 
     #tema nuevo para el aplicativo
     sv_ttk.set_theme("light")
@@ -70,10 +89,14 @@ def inicar_app():
     ent_pac_doc = ttk.Entry(lf_form_pacientes, width=35)
     ent_pac_doc.grid(row=2, column=1, padx=10, pady=8, sticky="w")
 
-    # Reemplazamos la fecha de nacimiento manual por el Calendario
+    # Reemplazamos el DateEntry conflictivo por nuestro selector personalizado
     ttk.Label(lf_form_pacientes, text="Fecha Nacimiento *").grid(row=3, column=0, padx=10, pady=8, sticky="e")
-    ent_pac_fecha = DateEntry(lf_form_pacientes, width=33, background='#2B579A', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
-    ent_pac_fecha.grid(row=3, column=1, padx=10, pady=8, sticky="w")
+    frame_cal_pac = ttk.Frame(lf_form_pacientes)
+    frame_cal_pac.grid(row=3, column=1, padx=10, pady=8, sticky="w")
+    ent_pac_fecha = ttk.Entry(frame_cal_pac, width=28, state="readonly")
+    ent_pac_fecha.pack(side="left", padx=(0, 5))
+    btn_cal_pac = ttk.Button(frame_cal_pac, text="📅", width=4, command=lambda: abrir_calendario_seguro(ent_pac_fecha))
+    btn_cal_pac.pack(side="left")
 
     # Columna Derecha (Datos de Contacto)
     ttk.Label(lf_form_pacientes, text="Teléfono *").grid(row=0, column=2, padx=20, pady=8, sticky="e")
@@ -360,10 +383,14 @@ def inicar_app():
     combo_cita_med.bind("<<ComboboxSelected>>", mostrar_info_medico)
     # -----------------------------------------------
 
-    # Entradas de Fecha, Hora y Motivo (Se movieron a las filas 3, 4 y 5)
+    # Reemplazamos el DateEntry conflictivo por nuestro selector personalizado
     ttk.Label(lf_form_citas, text="Seleccionar Fecha *").grid(row=3, column=0, padx=10, pady=8, sticky="e")
-    ent_fecha = DateEntry(lf_form_citas, width=38, background='#2B579A', foreground='white', borderwidth=2, date_pattern='yyyy-mm-dd')
-    ent_fecha.grid(row=3, column=1, padx=10, pady=8, sticky="w")
+    frame_cal_cita = ttk.Frame(lf_form_citas)
+    frame_cal_cita.grid(row=3, column=1, padx=10, pady=8, sticky="w")
+    ent_fecha = ttk.Entry(frame_cal_cita, width=35, state="readonly")
+    ent_fecha.pack(side="left", padx=(0, 5))
+    btn_cal_cita = ttk.Button(frame_cal_cita, text="📅", width=4, command=lambda: abrir_calendario_seguro(ent_fecha))
+    btn_cal_cita.pack(side="left")
     
     ttk.Label(lf_form_citas, text="Hora (HH:MM) *").grid(row=4, column=0, padx=10, pady=8, sticky="e")
     ent_cita_hora = ttk.Entry(lf_form_citas, width=43)
