@@ -207,3 +207,77 @@ def obtener_horarios_medico_texto(id_medico):
             conexion.close()
             
     return " | ".join(horarios_texto) if horarios_texto else "Sin horario asignado"
+
+
+def modificar_cita(combo_modificar, ent_fecha, ent_hora, lista_citas):
+    """Actualiza la fecha y hora de una cita programada, validando conflictos."""
+    cita_sel = combo_modificar.get()
+    nueva_fecha = ent_fecha.get()
+    nueva_hora = ent_hora.get()
+
+    if not cita_sel or not nueva_fecha or not nueva_hora:
+        messagebox.showwarning("Advertencia", "Selecciona una cita y define la nueva fecha y hora.")
+        return
+
+    # 1. Extraer el ID de la cita seleccionada
+    id_cita = None
+    for c in lista_citas:
+        texto_match = f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
+        if texto_match == cita_sel:
+            id_cita = c[0]
+            break
+
+    if not id_cita:
+        return
+
+    conexion = conectar_bd()
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            
+            # 2. Buscar qué médico y paciente están en esta cita para hacer las validaciones
+            cursor.execute("SELECT id_medico, id_paciente FROM citas WHERE id_cita = %s", (id_cita,))
+            resultado = cursor.fetchone()
+            id_med = resultado[0]
+            id_pac = resultado[1]
+
+            # 3. Validar qué día de la semana es la nueva fecha
+            try:
+                fecha_obj = datetime.strptime(nueva_fecha, "%Y-%m-%d")
+                dia_semana_solicitado = fecha_obj.weekday() + 1 
+            except ValueError:
+                messagebox.showerror("Error", "Formato de fecha incorrecto.")
+                return
+
+            # 4. Validar si el médico trabaja en ese nuevo horario
+            sql_val_horario = """
+                SELECT COUNT(*) FROM horarios 
+                WHERE id_medico = %s AND dia_semana = %s AND hora_inicio <= %s AND hora_fin >= %s
+            """
+            cursor.execute(sql_val_horario, (id_med, dia_semana_solicitado, nueva_hora, nueva_hora))
+            if cursor.fetchone()[0] == 0:
+                messagebox.showerror("Fuera de Horario", "❌ El médico NO atiende en ese día o la nueva hora está fuera de su turno.")
+                return
+
+            # 5. Validar que el médico no tenga OTRA cita distinta a la misma hora
+            sql_val_med = "SELECT COUNT(*) FROM citas WHERE id_medico = %s AND fecha = %s AND hora = %s AND estado != 'cancelada' AND id_cita != %s"
+            cursor.execute(sql_val_med, (id_med, nueva_fecha, nueva_hora, id_cita))
+            if cursor.fetchone()[0] > 0:
+                messagebox.showerror("Conflicto", "❌ El MÉDICO ya tiene OTRA cita asignada en esa nueva fecha y hora.")
+                return
+
+            # 6. Hacer el UPDATE
+            cursor.execute("UPDATE citas SET fecha = %s, hora = %s WHERE id_cita = %s", (nueva_fecha, nueva_hora, id_cita))
+            conexion.commit()
+            
+            messagebox.showinfo("Éxito", "🔄 Cita reprogramada correctamente.")
+            combo_modificar.set('')
+            ent_fecha.config(state="normal")
+            ent_fecha.delete(0, tk.END)
+            ent_fecha.config(state="readonly")
+            ent_hora.delete(0, tk.END)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo modificar la cita: {e}")
+        finally:
+            conexion.close()

@@ -6,7 +6,7 @@ from tkcalendar import Calendar
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
 from consultas_horario import guardar_horario, cargar_medicos, cargar_tabla_horarios
-from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita, obtener_horarios_medico_texto 
+from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita, obtener_horarios_medico_texto, modificar_cita 
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
 
@@ -20,7 +20,7 @@ def inicar_app():
     ventana.title("Sistema de Gestión - Consulta Médico")
     ventana.geometry("900x700")
 
-    # --- NUEVA FUNCIÓN: SELECTOR DE FECHAS A PRUEBA DE BUGS ---
+    #FUNCIÓN: SELECTOR DE FECHAS A PRUEBA DE BUGS
     def abrir_calendario_seguro(entry_widget):
         top = tk.Toplevel(ventana)
         top.title("Elegir Fecha")
@@ -409,10 +409,39 @@ def inicar_app():
     btn_agendar = ttk.Button(lf_form_citas, text="📅 Agendar Cita", style="Accent.TButton", command=ejecutar_agendar_seguro)
     btn_agendar.grid(row=6, column=0, columnspan=3, pady=20)
 
+    # --- CONTENEDOR 1.5: MODIFICAR CITA ---
+    lf_modificar_citas = ttk.LabelFrame(frame_citas, text=" 🔄 Reprogramar Cita Existente ", padding=(20, 15))
+    lf_modificar_citas.grid(row=1, column=0, padx=20, pady=5, sticky="nsew")
+
+    def actualizar_combo_modificar_citas():
+        global_citas_programadas_bd = obtener_citas_programadas()
+        citas_formateadas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in global_citas_programadas_bd]
+        combo_mod_cita['values'] = citas_formateadas
+
+    ttk.Label(lf_modificar_citas, text="Seleccionar Cita:").grid(row=0, column=0, padx=10, pady=8, sticky="e")
+    combo_mod_cita = ttk.Combobox(lf_modificar_citas, state="readonly", postcommand=actualizar_combo_modificar_citas, width=65)
+    combo_mod_cita.grid(row=0, column=1, padx=10, pady=8, sticky="w")
+
+    ttk.Label(lf_modificar_citas, text="Nueva Fecha:").grid(row=1, column=0, padx=10, pady=8, sticky="e")
+    frame_cal_mod = ttk.Frame(lf_modificar_citas)
+    frame_cal_mod.grid(row=1, column=1, padx=10, pady=8, sticky="w")
+    ent_mod_fecha = ttk.Entry(frame_cal_mod, width=28, state="readonly")
+    ent_mod_fecha.pack(side="left", padx=(0, 5))
+    ttk.Button(frame_cal_mod, text="📅", width=4, command=lambda: abrir_calendario_seguro(ent_mod_fecha)).pack(side="left")
+
+    ttk.Label(lf_modificar_citas, text="Nueva Hora (HH:MM):").grid(row=2, column=0, padx=10, pady=8, sticky="e")
+    ent_mod_hora = ttk.Entry(lf_modificar_citas, width=35)
+    ent_mod_hora.grid(row=2, column=1, padx=10, pady=8, sticky="w")
+
+    def ejecutar_modificar_seguro():
+        citas_programadas_frescas = obtener_citas_programadas()
+        modificar_cita(combo_mod_cita, ent_mod_fecha, ent_mod_hora, citas_programadas_frescas)
+    btn_modificar = ttk.Button(lf_modificar_citas, text="🔄 Guardar Nueva Fecha", command=ejecutar_modificar_seguro)
+    btn_modificar.grid(row=3, column=0, columnspan=2, pady=10)
 
     # --- CONTENEDOR 2: CANCELAR CITA ---
     lf_cancelar_citas = ttk.LabelFrame(frame_citas, text=" 🚫 Cancelar Cita Programada ", padding=(20, 15))
-    lf_cancelar_citas.grid(row=1, column=0, padx=20, pady=5, sticky="nsew")
+    lf_cancelar_citas.grid(row=2, column=0, padx=20, pady=5, sticky="nsew")
 
     def ejecutar_cancelar_seguro():
         citas_programadas_frescas = obtener_citas_programadas()
