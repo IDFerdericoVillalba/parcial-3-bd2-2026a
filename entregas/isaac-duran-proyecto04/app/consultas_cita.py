@@ -174,3 +174,36 @@ def obtener_especialidades_medico(id_medico):
         finally:
             conexion.close()
     return especialidades
+
+
+def obtener_horarios_medico_texto(id_medico):
+    """Devuelve un texto formateado con los días y horas de atención de un médico."""
+    conexion = conectar_bd()
+    horarios_texto = []
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            sql = """
+                SELECT 
+                    GROUP_CONCAT(
+                        CASE dia_semana 
+                            WHEN 1 THEN 'Lun' WHEN 2 THEN 'Mar' WHEN 3 THEN 'Mié' 
+                            WHEN 4 THEN 'Jue' WHEN 5 THEN 'Vie' WHEN 6 THEN 'Sáb' WHEN 7 THEN 'Dom' 
+                        END 
+                        ORDER BY dia_semana SEPARATOR ', '
+                    ) as dias,
+                    hora_inicio, 
+                    hora_fin
+                FROM horarios
+                WHERE id_medico = %s
+                GROUP BY hora_inicio, hora_fin
+            """
+            cursor.execute(sql, (id_medico,))
+            resultados = cursor.fetchall()
+            
+            for fila in resultados:
+                horarios_texto.append(f"{fila[0]} ({fila[1]} a {fila[2]})")
+        finally:
+            conexion.close()
+            
+    return " | ".join(horarios_texto) if horarios_texto else "Sin horario asignado"

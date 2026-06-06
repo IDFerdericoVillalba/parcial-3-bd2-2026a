@@ -6,7 +6,7 @@ from tkcalendar import DateEntry
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
 from consultas_horario import guardar_horario, cargar_medicos, cargar_tabla_horarios
-from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita
+from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita, obtener_horarios_medico_texto 
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
 
@@ -303,25 +303,34 @@ def inicar_app():
     combo_cita_med = ttk.Combobox(lf_form_citas, postcommand=actualizar_medicos_citas, values=nombres_med, state="readonly", width=40)
     combo_cita_med.grid(row=1, column=1, padx=10, pady=(8, 0), sticky="w")
 
-    # --- NUEVO DISEÑO: TARJETA DE ESPECIALIDAD ---
+    # --- NUEVO DISEÑO: TARJETA DE INFORMACIÓN MÉDICA ---
     # Un Frame estilizado que actúa como una "caja de alerta" informativa
     frame_info_medico = tk.Frame(lf_form_citas, bg="#F0F4F8", highlightbackground="#B0C4DE", highlightthickness=1)
     frame_info_medico.grid(row=2, column=1, padx=10, pady=(4, 10), sticky="w")
 
-    lbl_icono = tk.Label(frame_info_medico, text="⚕️ Especialidad:", bg="#F0F4F8", fg="#2B579A", font=("Arial", 9, "bold"))
-    lbl_icono.pack(side="left", padx=(8, 2), pady=4)
-
+    # Fila 0: Especialidad
+    lbl_icono_esp = tk.Label(frame_info_medico, text="⚕️ Especialidad:", bg="#F0F4F8", fg="#2B579A", font=("Arial", 9, "bold"))
+    lbl_icono_esp.grid(row=0, column=0, padx=(8, 2), pady=(4, 2), sticky="w")
     lbl_especialidades = tk.Label(frame_info_medico, text="(Seleccione un médico)", bg="#F0F4F8", fg="#666666", font=("Arial", 9, "italic"))
-    lbl_especialidades.pack(side="left", padx=(0, 8), pady=4)
+    lbl_especialidades.grid(row=0, column=1, padx=(0, 8), pady=(4, 2), sticky="w")
+
+    # Fila 1: Horario
+    lbl_icono_hor = tk.Label(frame_info_medico, text="⏰ Horario:", bg="#F0F4F8", fg="#2B579A", font=("Arial", 9, "bold"))
+    lbl_icono_hor.grid(row=1, column=0, padx=(8, 2), pady=(0, 4), sticky="w")
+    lbl_horarios = tk.Label(frame_info_medico, text="(Seleccione un médico)", bg="#F0F4F8", fg="#666666", font=("Arial", 9, "italic"))
+    lbl_horarios.grid(row=1, column=1, padx=(0, 8), pady=(0, 4), sticky="w")
     
-    def mostrar_especialidades(event):
+    def mostrar_info_medico(event):
         med_sel = combo_cita_med.get()
         if not med_sel:
             # Apariencia apagada si no hay selección
             lbl_especialidades.config(text="(Seleccione un médico)", fg="#666666", font=("Arial", 9, "italic"))
+            lbl_horarios.config(text="(Seleccione un médico)", fg="#666666", font=("Arial", 9, "italic"))
             frame_info_medico.config(bg="#F0F4F8", highlightbackground="#B0C4DE")
-            lbl_icono.config(bg="#F0F4F8")
+            lbl_icono_esp.config(bg="#F0F4F8")
             lbl_especialidades.config(bg="#F0F4F8")
+            lbl_icono_hor.config(bg="#F0F4F8")
+            lbl_horarios.config(bg="#F0F4F8")
             return
         
         id_medico = None
@@ -331,16 +340,24 @@ def inicar_app():
                 break
         
         if id_medico:
+            # 1. Traer y mostrar Especialidades
             especialidades = obtener_especialidades_medico(id_medico)
             texto_esp = " • ".join(especialidades) if especialidades else "Medicina General"
             
-            # Apariencia encendida (azul clínico) al detectar especialidades
+            # 2. Traer y mostrar Horarios (Llama a la nueva función)
+            texto_horario = obtener_horarios_medico_texto(id_medico)
+            
+            # Apariencia encendida (azul clínico) al detectar datos
             lbl_especialidades.config(text=texto_esp, fg="#004A99", font=("Arial", 9, "bold"))
+            lbl_horarios.config(text=texto_horario, fg="#004A99", font=("Arial", 9, "bold"))
+            
             frame_info_medico.config(bg="#E8F0FE", highlightbackground="#8DB6CD")
-            lbl_icono.config(bg="#E8F0FE")
+            lbl_icono_esp.config(bg="#E8F0FE")
             lbl_especialidades.config(bg="#E8F0FE")
+            lbl_icono_hor.config(bg="#E8F0FE")
+            lbl_horarios.config(bg="#E8F0FE")
 
-    combo_cita_med.bind("<<ComboboxSelected>>", mostrar_especialidades)
+    combo_cita_med.bind("<<ComboboxSelected>>", mostrar_info_medico)
     # -----------------------------------------------
 
     # Entradas de Fecha, Hora y Motivo (Se movieron a las filas 3, 4 y 5)
