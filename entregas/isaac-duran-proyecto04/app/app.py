@@ -193,10 +193,29 @@ def iniciar_app():
     listbox_especialidades.pack(side="left", fill="y")
     scrollbar_esp.pack(side="right", fill="y")
 
-    # Cargar las especialidades de la BD dentro del Listbox
+    # Cargar las especialidades iniciales
     lista_esp_bd = cargar_especialidades()
     for esp in lista_esp_bd:
         listbox_especialidades.insert(tk.END, esp[1])
+
+    def actualizar_especialidades_seguro(event):
+        nuevas_esp = cargar_especialidades()
+        
+        if nuevas_esp != lista_esp_bd:
+            # 1. Guardar lo que el usuario ya tenía seleccionado para no borrárselo
+            selecciones_actuales = [listbox_especialidades.get(i) for i in listbox_especialidades.curselection()]
+            
+            # 2. Limpiar el cuadro y actualizar la lista en memoria
+            listbox_especialidades.delete(0, tk.END)
+            lista_esp_bd.clear()
+            lista_esp_bd.extend(nuevas_esp)
+            
+            # 3. Volver a llenar el cuadro y restaurar las selecciones previas
+            for i, esp in enumerate(lista_esp_bd):
+                listbox_especialidades.insert(tk.END, esp[1])
+                if esp[1] in selecciones_actuales:
+                    listbox_especialidades.selection_set(i)
+    listbox_especialidades.bind("<Enter>", actualizar_especialidades_seguro)
 
     entradas_medico = {
         'nombre': ent_med_nombre,
