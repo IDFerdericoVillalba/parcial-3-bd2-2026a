@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`medicos` (
   PRIMARY KEY (`id_medico`),
   UNIQUE INDEX `uq_medico_registro` (`documento` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 27
+AUTO_INCREMENT = 7
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`pacientes` (
   PRIMARY KEY (`id_paciente`),
   UNIQUE INDEX `uq_pac_documento` (`documento` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 25
+AUTO_INCREMENT = 13
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -71,12 +71,16 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`citas` (
   INDEX `fk_cita_medico1_idx` (`id_medico` ASC) VISIBLE,
   CONSTRAINT `fk_cita_medico1`
     FOREIGN KEY (`id_medico`)
-    REFERENCES `consultorio_medico`.`medicos` (`id_medico`),
+    REFERENCES `consultorio_medico`.`medicos` (`id_medico`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
   CONSTRAINT `fk_cita_paciente1`
     FOREIGN KEY (`id_paciente`)
-    REFERENCES `consultorio_medico`.`pacientes` (`id_paciente`))
+    REFERENCES `consultorio_medico`.`pacientes` (`id_paciente`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 40
+AUTO_INCREMENT = 34
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -96,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`consultas` (
     FOREIGN KEY (`id_cita`)
     REFERENCES `consultorio_medico`.`citas` (`id_cita`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 22
+AUTO_INCREMENT = 17
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -111,7 +115,7 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`especialidades` (
   PRIMARY KEY (`id_especialidad`),
   UNIQUE INDEX `uq_esp_nombre` (`nombre` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 5
+AUTO_INCREMENT = 6
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -126,12 +130,13 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`horarios` (
   `hora_inicio` TIME NOT NULL,
   `hora_fin` TIME NOT NULL,
   PRIMARY KEY (`id_horario`),
-  INDEX `fk_horarios_medico1_idx` (`id_medico` ASC) VISIBLE,
+  UNIQUE INDEX `uq_horario_medico` (`id_medico` ASC, `dia_semana` ASC, `hora_inicio` ASC) INVISIBLE,
+  INDEX `fk_horarios_medico1_idx` (`id_medico` ASC) INVISIBLE,
   CONSTRAINT `fk_horarios_medico1`
     FOREIGN KEY (`id_medico`)
     REFERENCES `consultorio_medico`.`medicos` (`id_medico`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 30
+AUTO_INCREMENT = 18
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -170,7 +175,7 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`tratamientos` (
     FOREIGN KEY (`id_consulta`)
     REFERENCES `consultorio_medico`.`consultas` (`id_consulta`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 22
+AUTO_INCREMENT = 17
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
