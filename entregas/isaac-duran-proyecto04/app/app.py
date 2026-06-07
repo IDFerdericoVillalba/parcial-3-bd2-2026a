@@ -14,7 +14,7 @@ from historial import obtener_historial_paciente, exportar_pdf
 ################################################################
 
 
-def inicar_app():
+def iniciar_app():
     #ventana principal
     ventana = tk.Tk()
     ventana.title("Sistema de Gestión - Consulta Médico")
@@ -554,5 +554,5 @@ def inicar_app():
 
     ventana.mainloop()
 if __name__ == "__main__":
-    inicar_app()
+    iniciar_app()
     

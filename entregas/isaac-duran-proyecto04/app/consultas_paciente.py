@@ -20,8 +20,8 @@ def cargar_pacientes(tree):
 
 def guardar_paciente(entradas, tree):
     nombre = entradas['nombre'].get()
-    apelido = entradas['apellido'].get()
-    docuemnto = entradas['documento'].get()
+    apellido = entradas['apellido'].get()
+    documento = entradas['documento'].get()
     fecha_nacimiento = entradas['fecha_nacimiento'].get()
     telefono = entradas['telefono'].get()
     correo = entradas['correo'].get()
@@ -29,7 +29,7 @@ def guardar_paciente(entradas, tree):
 
 
     #validar que todos los campos de paciente no esten vacios
-    if not (nombre and apelido and docuemnto and fecha_nacimiento and telefono):
+    if not (nombre and apellido and documento and fecha_nacimiento and telefono):
         messagebox.showerror("Advertencia", "Los campos con * son obligatorios")
         return
     
@@ -39,7 +39,7 @@ def guardar_paciente(entradas, tree):
             cursor = conexion.cursor()
             sql = """INSERT INTO pacientes (nombre, apellido, documento, fecha_nacimiento, telefono, correo, direccion) 
             VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-            valores = (nombre, apelido, docuemnto, fecha_nacimiento, telefono, correo, direccion)
+            valores = (nombre, apellido, documento, fecha_nacimiento, telefono, correo, direccion)
 
             cursor.execute(sql, valores)
             conexion.commit()

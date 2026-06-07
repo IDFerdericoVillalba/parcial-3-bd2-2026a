@@ -1,8 +1,4 @@
-# 🏥 Sistema de Gestión - Consultorio Médico (Proyecto 04)
-
-Este aplicativo de escritorio desarrollado en Python con Tkinter permite gestionar pacientes, médicos, agendar citas, registrar consultas y exportar historiales clínicos a PDF, utilizando una base de datos MySQL normalizada en 3FN.
-
----
+#Sistema de Gestión - Consultorio Médico
 
 Paso 1: Configurar la Base de Datos
 1. Abre tu gestor de bases de datos (ej. MySQL Workbench).
@@ -18,8 +14,11 @@ Para que el aplicativo se pueda conectar a tu base de datos local:
 
 Paso 3: Instalar Librerías
 Abre una terminal en Visual Studio Code y ejecuta este comando para instalar todas las dependencias necesarias de un solo golpe:
+Abre una terminal en Visual Studio Code, asegúrate de estar en la carpeta raíz de esta entrega y ejecuta:
+
 ```bash
 pip install mysql-connector-python sv_ttk tkcalendar fpdf2
+
 
 Paso 4: Ejecutar el aplicativo
 Entra en la carpeta app y luego dentro del archivo app.py, ejecuta el progama.
