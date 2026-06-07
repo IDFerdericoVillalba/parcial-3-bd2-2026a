@@ -198,7 +198,7 @@ def iniciar_app():
     for esp in lista_esp_bd:
         listbox_especialidades.insert(tk.END, esp[1])
 
-    def actualizar_especialidades_seguro(event):
+    def actualizar_especialidades_seguro(event=None):
         nuevas_esp = cargar_especialidades()
         
         if nuevas_esp != lista_esp_bd:
@@ -215,7 +215,13 @@ def iniciar_app():
                 listbox_especialidades.insert(tk.END, esp[1])
                 if esp[1] in selecciones_actuales:
                     listbox_especialidades.selection_set(i)
-    listbox_especialidades.bind("<Enter>", actualizar_especialidades_seguro)
+    # Refresco inteligente: Solo consultar la BD al entrar a la pestaña "Médicos"
+    def al_cambiar_pestana(event):
+        pestana_activa = notebook.tab(notebook.select(), "text")
+        if "Gestion de Médicos" in pestana_activa:
+            actualizar_especialidades_seguro()
+
+    notebook.bind("<<NotebookTabChanged>>", al_cambiar_pestana)
 
     entradas_medico = {
         'nombre': ent_med_nombre,

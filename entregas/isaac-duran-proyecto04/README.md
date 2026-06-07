@@ -9,7 +9,7 @@ Paso 1: Configurar la Base de Datos
 Paso 2: Configurar las Credenciales
 Para que el aplicativo se pueda conectar a tu base de datos local:
 1. Entra a la carpeta `app/` y abre el archivo **`conexiones.py`**.
-2. En la línea 7, cambia la contraseña `"359Id12435"` por la contraseña de tu servidor MySQL local.
+2. En la línea 7, cambia la contraseña `"TU CONTRASEÑA"` por la contraseña de tu servidor MySQL local.
 
 
 Paso 3: Instalar Librerías
