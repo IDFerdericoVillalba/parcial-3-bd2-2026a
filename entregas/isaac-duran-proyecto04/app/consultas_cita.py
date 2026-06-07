@@ -266,7 +266,14 @@ def modificar_cita(combo_modificar, ent_fecha, ent_hora, lista_citas):
                 messagebox.showerror("Conflicto", "❌ El MÉDICO ya tiene OTRA cita asignada en esa nueva fecha y hora.")
                 return
 
-            # 6. Hacer el UPDATE
+            # 6. Validar que el paciente no tenga OTRA cita en esa misma fecha y hora
+            sql_val_pac = "SELECT COUNT(*) FROM citas WHERE id_paciente = %s AND fecha = %s AND hora = %s AND estado != 'cancelada' AND id_cita != %s"
+            cursor.execute(sql_val_pac, (id_pac, nueva_fecha, nueva_hora, id_cita))
+            if cursor.fetchone()[0] > 0:
+                messagebox.showerror("Conflicto", "❌ El PACIENTE ya tiene OTRA cita asignada en esa nueva fecha y hora.")
+                return
+
+            # 7. Hacer el UPDATE
             cursor.execute("UPDATE citas SET fecha = %s, hora = %s WHERE id_cita = %s", (nueva_fecha, nueva_hora, id_cita))
             conexion.commit()
             
