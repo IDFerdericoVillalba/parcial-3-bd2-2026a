@@ -224,9 +224,6 @@ def modificar_cita(combo_modificar, ent_fecha, ent_hora, lista_citas):
         messagebox.showerror("Error", "No se pudo identificar la cita seleccionada.")
         return
 
-    if not id_cita:
-        return
-
     conexion = conectar_bd()
     if conexion:
         try:
