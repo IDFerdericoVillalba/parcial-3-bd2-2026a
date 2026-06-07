@@ -288,3 +288,38 @@ def modificar_cita(combo_modificar, ent_fecha, ent_hora, lista_citas):
             messagebox.showerror("Error", f"No se pudo modificar la cita: {e}")
         finally:
             conexion.close()
+
+
+def ejecutar_no_asistio_cita(combo_cita, lista_citas):
+    """Marca una cita programada como 'no_asistio' en la base de datos."""
+    cita_sel = combo_cita.get()
+    if not cita_sel:
+        messagebox.showwarning("Advertencia", "Selecciona una cita de la lista.")
+        return
+
+    # Extraer el ID de la cita
+    id_cita = None
+    for c in lista_citas:
+        texto_match = f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
+        if texto_match == cita_sel:
+            id_cita = c[0]
+            break
+
+    seguro = messagebox.askyesno("Confirmar Inasistencia", "¿Está seguro de marcar que el paciente NO ASISTIÓ a esta cita?")
+    if not seguro:
+        return
+
+    conexion = conectar_bd()
+    if conexion:
+        try:
+            cursor = conexion.cursor()
+            sql = "UPDATE citas SET estado = 'no_asistio' WHERE id_cita = %s"
+            cursor.execute(sql, (id_cita,))
+            conexion.commit()
+            messagebox.showinfo("Éxito", "La cita ha sido marcada como 'No Asistió'.")
+            combo_cita.set('')
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo actualizar la cita: {e}")
+        finally:
+            conexion.close()
+

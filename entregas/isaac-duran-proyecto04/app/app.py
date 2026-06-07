@@ -6,7 +6,7 @@ from tkcalendar import Calendar
 from consultas_paciente import cargar_pacientes, guardar_paciente
 from consultas_medico import cargar_especialidades, cargar_tabla_medicos, guardar_medico
 from consultas_horario import guardar_horario, cargar_medicos, cargar_tabla_horarios
-from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita, obtener_horarios_medico_texto, modificar_cita 
+from consultas_cita import obtener_especialidades_medico, obtener_pacientes_combo, agendar_cita, obtener_citas_programadas, ejecutar_cancelacion_cita, obtener_horarios_medico_texto, modificar_cita, ejecutar_no_asistio_cita
 from consultas_atencionCita import obtener_citas_pendientes, registrar_consulta_medica
 from historial import obtener_historial_paciente, exportar_pdf
 
@@ -439,26 +439,34 @@ def iniciar_app():
     btn_modificar.grid(row=3, column=0, columnspan=2, pady=10)
 
 
-    # --- PANEL DERECHO (ABAJO): CANCELAR CITA ---
-    lf_cancelar_citas = ttk.LabelFrame(frame_citas, text=" 🚫 Cancelar Cita Programada ", padding=(20, 15))
-    # Puesto en la columna 1, fila 1
-    lf_cancelar_citas.grid(row=1, column=1, padx=(10, 20), pady=(5, 15), sticky="nsew")
+    # --- PANEL DERECHO (ABAJO): GESTIONAR ESTADO DE LA CITA ---
+    lf_gestionar_citas = ttk.LabelFrame(frame_citas, text=" 🚫 Cancelar o Marcar Inasistencia ", padding=(20, 15))
+    lf_gestionar_citas.grid(row=1, column=1, padx=(10, 20), pady=(5, 15), sticky="nsew")
 
     def ejecutar_cancelar_seguro():
         citas_programadas_frescas = obtener_citas_programadas()
-        ejecutar_cancelacion_cita(combo_cancelar_cita, citas_programadas_frescas)
+        ejecutar_cancelacion_cita(combo_gest_cita, citas_programadas_frescas)
 
-    def actualizar_combo_cancelar_citas():
+    def ejecutar_no_asistio_seguro():
+        citas_programadas_frescas = obtener_citas_programadas()
+        ejecutar_no_asistio_cita(combo_gest_cita, citas_programadas_frescas)
+
+    def actualizar_combo_gestionar_citas():
         global_citas_programadas_bd = obtener_citas_programadas()
         citas_formateadas = [f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}" for c in global_citas_programadas_bd]
-        combo_cancelar_cita['values'] = citas_formateadas
+        combo_gest_cita['values'] = citas_formateadas
 
-    ttk.Label(lf_cancelar_citas, text="Seleccionar Cita:").grid(row=0, column=0, padx=10, pady=10, sticky="e")
-    combo_cancelar_cita = ttk.Combobox(lf_cancelar_citas, state="readonly", postcommand=actualizar_combo_cancelar_citas, width=45)
-    combo_cancelar_cita.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+    ttk.Label(lf_gestionar_citas, text="Seleccionar Cita:").grid(row=0, column=0, padx=10, pady=10, sticky="e")
+    combo_gest_cita = ttk.Combobox(lf_gestionar_citas, state="readonly", postcommand=actualizar_combo_gestionar_citas, width=45)
+    combo_gest_cita.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
-    btn_cancelar = ttk.Button(lf_cancelar_citas, text="❌ Cancelar Cita", command=ejecutar_cancelar_seguro)
-    btn_cancelar.grid(row=1, column=0, columnspan=2, pady=10)
+    # Contenedor interno para poner los dos botones alineados
+    frame_btns_estado = ttk.Frame(lf_gestionar_citas)
+    frame_btns_estado.grid(row=1, column=0, columnspan=2, pady=10)
+    btn_cancelar = ttk.Button(frame_btns_estado, text="❌ Cancelar Cita", command=ejecutar_cancelar_seguro)
+    btn_cancelar.pack(side="left", padx=10)
+    btn_no_asistio = ttk.Button(frame_btns_estado, text="⚠️ Paciente No Asistió", command=ejecutar_no_asistio_seguro)
+    btn_no_asistio.pack(side="left", padx=10)
 
 
 # ==========================================================================================================================
