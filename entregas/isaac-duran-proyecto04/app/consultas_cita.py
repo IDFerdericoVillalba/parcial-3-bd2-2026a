@@ -30,21 +30,18 @@ def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pa
         messagebox.showwarning("Advertencia", "Todos los campos son obligatorios.")
         return
 
-    # 1. Obtener IDs buscando en las listas
-    id_pac = None
-    for p in lista_pac:
-        if f"{p[1]} {p[2]} - {p[3]}" == pac_sel:
-            id_pac = p[0]
-            break
+    # 1. Obtener IDs utilizando diccionarios de mapeo (Búsqueda O(1))
+    mapa_pacientes = {f"{p[1]} {p[2]} - {p[3]}": p[0] for p in lista_pac}
+    id_pac = mapa_pacientes.get(pac_sel)
+    mapa_medicos = {f"{m[1]} {m[2]}": m[0] for m in lista_med}
+    id_med = mapa_medicos.get(med_sel)
 
-    id_med = None
-    for m in lista_med:
-        if f"{m[1]} {m[2]}" == med_sel:
-            id_med = m[0]
-            break
+    # Validación extra de seguridad
+    if not id_pac or not id_med:
+        messagebox.showerror("Error Interno", "No se pudo recuperar el ID del paciente o médico seleccionado.")
+        return
 
-    # --- NUEVA LÓGICA: Calcular qué día de la semana es la fecha seleccionada ---
-    # En Python, Monday=0, Sunday=6. En nuestra BD: Lunes=1, Domingo=7. Así que sumamos 1.
+    # En Python, Monday=0, Sunday=6. En nuestra BD: Lunes=1, Domingo=7.
     try:
         fecha_obj = datetime.strptime(fecha, "%Y-%m-%d")
         dia_semana_solicitado = fecha_obj.weekday() + 1 
@@ -129,14 +126,14 @@ def ejecutar_cancelacion_cita(combo_cancelar, lista_citas):
         messagebox.showwarning("Advertencia", "Selecciona una cita para cancelar.")
         return
 
-    # Extraer el ID de la cita
-    id_cita = None
-    for c in lista_citas:
-        texto_match = f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
-        if texto_match == cita_sel:
-            id_cita = c[0]
-            break
+    # Extraer el ID de la cita usando mapeo seguro
+    mapa_citas = {f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}": c[0] for c in lista_citas}
+    id_cita = mapa_citas.get(cita_sel)
 
+    if not id_cita:
+        messagebox.showerror("Error", "No se pudo identificar la cita seleccionada.")
+        return
+    
     seguro = messagebox.askyesno("Confirmar", "¿Está seguro de que desea cancelar esta cita?")
     if not seguro:
         return
@@ -219,13 +216,13 @@ def modificar_cita(combo_modificar, ent_fecha, ent_hora, lista_citas):
         messagebox.showwarning("Advertencia", "Selecciona una cita y define la nueva fecha y hora.")
         return
 
-    # 1. Extraer el ID de la cita seleccionada
-    id_cita = None
-    for c in lista_citas:
-        texto_match = f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
-        if texto_match == cita_sel:
-            id_cita = c[0]
-            break
+    # Extraer el ID de la cita usando mapeo seguro
+    mapa_citas = {f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}": c[0] for c in lista_citas}
+    id_cita = mapa_citas.get(cita_sel)
+    
+    if not id_cita:
+        messagebox.showerror("Error", "No se pudo identificar la cita seleccionada.")
+        return
 
     if not id_cita:
         return
@@ -297,13 +294,13 @@ def ejecutar_no_asistio_cita(combo_cita, lista_citas):
         messagebox.showwarning("Advertencia", "Selecciona una cita de la lista.")
         return
 
-    # Extraer el ID de la cita
-    id_cita = None
-    for c in lista_citas:
-        texto_match = f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}"
-        if texto_match == cita_sel:
-            id_cita = c[0]
-            break
+    # Extraer el ID de la cita usando mapeo seguro
+    mapa_citas = {f"ID: {c[0]} | {c[1]} - {c[2]} | Paciente: {c[3]} {c[4]}": c[0] for c in lista_citas}
+    id_cita = mapa_citas.get(cita_sel)
+    
+    if not id_cita:
+        messagebox.showerror("Error", "No se pudo identificar la cita seleccionada.")
+        return
 
     seguro = messagebox.askyesno("Confirmar Inasistencia", "¿Está seguro de marcar que el paciente NO ASISTIÓ a esta cita?")
     if not seguro:
