@@ -17,8 +17,9 @@ Para que el aplicativo pueda comunicarse con tu base de datos local:
 
 ### Paso 3: Instalar Librerías
 Abre una terminal en la carpeta raíz del proyecto y ejecuta la siguiente instrucción para instalar las dependencias necesarias de forma global:
-
+```bash
 - Escribe: pip install mysql-connector-python sv_ttk tkcalendar fpdf2 (y presiona Enter)
+```
 
 ### Paso 4: Ejecutar el Aplicativo
 Una vez instaladas las dependencias, debes entrar a la carpeta de la aplicación y ejecutar el archivo principal:
