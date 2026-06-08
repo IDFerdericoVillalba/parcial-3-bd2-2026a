@@ -29,3 +29,5 @@ Una vez instaladas las dependencias, debes entrar a la carpeta de la aplicación
 3. Si usas Linux o Mac, escribe: python3 app.py (y presiona Enter).
 
 si usas Visual Studio Code, abre el archivo del proyecto y ubicate en app.py, y corre el codigo.
+
+"Nota para sustentación: El sistema no requiere inicio de sesión. Para probar el flujo completo, puede agendar una cita seleccionando al paciente de prueba 'Juan Cárdenas' y al médico 'Carlos Restrepo', o puedes ingresar tu propio paciente o medico.
