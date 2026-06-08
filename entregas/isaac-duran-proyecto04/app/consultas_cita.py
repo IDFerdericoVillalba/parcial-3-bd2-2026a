@@ -29,6 +29,11 @@ def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pa
     if not pac_sel or not med_sel or not fecha or not hora or not motivo:
         messagebox.showwarning("Advertencia", "Todos los campos son obligatorios.")
         return
+    try:
+        datetime.strptime(hora, "%H:%M")
+    except ValueError:
+        messagebox.showerror("Error de Formato", "Por favor, ingresa la hora exactamente en formato HH:MM (por ejemplo: 08:30 o 14:00).")
+        return
 
     # 1. Obtener IDs utilizando diccionarios de mapeo (Búsqueda O(1))
     mapa_pacientes = {f"{p[1]} {p[2]} - {p[3]}": p[0] for p in lista_pac}
@@ -214,6 +219,11 @@ def modificar_cita(combo_modificar, ent_fecha, ent_hora, lista_citas):
 
     if not cita_sel or not nueva_fecha or not nueva_hora:
         messagebox.showwarning("Advertencia", "Selecciona una cita y define la nueva fecha y hora.")
+        return
+    try:
+        datetime.strptime(nueva_hora, "%H:%M")
+    except ValueError:
+        messagebox.showerror("Error de Formato", "Por favor, ingresa la nueva hora exactamente en formato HH:MM (por ejemplo: 08:30 o 14:00).")
         return
 
     # Extraer el ID de la cita usando mapeo seguro

@@ -30,7 +30,6 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`medicos` (
   PRIMARY KEY (`id_medico`),
   UNIQUE INDEX `uq_medico_registro` (`documento` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -50,7 +49,6 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`pacientes` (
   PRIMARY KEY (`id_paciente`),
   UNIQUE INDEX `uq_pac_documento` (`documento` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -80,7 +78,6 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`citas` (
     ON DELETE RESTRICT
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -100,7 +97,6 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`consultas` (
     FOREIGN KEY (`id_cita`)
     REFERENCES `consultorio_medico`.`citas` (`id_cita`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -115,7 +111,6 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`especialidades` (
   PRIMARY KEY (`id_especialidad`),
   UNIQUE INDEX `uq_esp_nombre` (`nombre` ASC) VISIBLE)
 ENGINE = InnoDB
-AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -136,7 +131,6 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`horarios` (
     FOREIGN KEY (`id_medico`)
     REFERENCES `consultorio_medico`.`medicos` (`id_medico`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 
@@ -175,7 +169,6 @@ CREATE TABLE IF NOT EXISTS `consultorio_medico`.`tratamientos` (
     FOREIGN KEY (`id_consulta`)
     REFERENCES `consultorio_medico`.`consultas` (`id_consulta`))
 ENGINE = InnoDB
-AUTO_INCREMENT = 1
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_unicode_ci;
 

@@ -27,3 +27,5 @@ Una vez instaladas las dependencias, debes entrar a la carpeta de la aplicación
 1. En la misma terminal, escribe: cd app (y presiona Enter para entrar a la carpeta).
 2. Si usas Windows, escribe: python app.py (y presiona Enter).
 3. Si usas Linux o Mac, escribe: python3 app.py (y presiona Enter).
+
+si usas Visual Studio Code, abre el archivo del proyecto y ubicate en app.py, y corre el codigo.
