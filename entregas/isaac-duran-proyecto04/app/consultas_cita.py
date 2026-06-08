@@ -29,10 +29,12 @@ def agendar_cita(combo_pac, combo_med, ent_fecha, ent_hora, ent_motivo, lista_pa
     if not pac_sel or not med_sel or not fecha or not hora or not motivo:
         messagebox.showwarning("Advertencia", "Todos los campos son obligatorios.")
         return
+    # Validar formato y NORMALIZAR la hora (Transforma "8:00" a "08:00")
     try:
-        datetime.strptime(hora, "%H:%M")
+        hora_obj = datetime.strptime(hora, "%H:%M")
+        hora = hora_obj.strftime("%H:%M")
     except ValueError:
-        messagebox.showerror("Error de Formato", "Por favor, ingresa la hora exactamente en formato HH:MM (por ejemplo: 08:30 o 14:00).")
+        messagebox.showerror("Error de Formato", "Por favor, ingresa una hora válida (por ejemplo: 08:30 o 14:00).")
         return
 
     # 1. Obtener IDs utilizando diccionarios de mapeo (Búsqueda O(1))
