@@ -5,9 +5,9 @@ def conectar_bd():
     try:
         conexion = mysql.connector.connect(
             host="localhost",  #tu servidor
-            user="root", #tu usario 
-            passwd="359Id12435", #tu contraseña
-            database="consultorio_medico" #tu base de datos
+            user="tu usario", #tu usario 
+            passwd="tu contraseña", #tu contraseña
+            database="el nombre de la base de datos" #tu base de datos
         )
 
         if conexion.is_connected():
